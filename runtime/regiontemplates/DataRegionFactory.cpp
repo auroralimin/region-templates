@@ -135,6 +135,104 @@ DataRegionFactory::~DataRegionFactory() {
 }
 
 
+cv::Mat DataRegionFactory::loadXml(DenseDataRegion2D *dr2D, std::string path) {
+	cv::Mat chunkData;
+    // if it is an Mat stored as a XML file
+    std::string inputFile;
+
+    if(dr2D->getIsAppInput()){
+        inputFile = dr2D->getInputFileName();
+    }else{
+        inputFile = createOutputFileName(dr2D, path, ".xml");
+    }
+    cv::FileStorage fs2(inputFile, cv::FileStorage::READ);
+    if (fs2.isOpened()) {
+        fs2["mat"] >> chunkData;
+        fs2.release();
+#ifdef DEBUG
+        std::cout << "LOADING XML input data: " << inputFile << " dataRegion: " << dr2D->getName() <<
+            " chunk.rows: " << chunkData.rows << " chunk.cols: " << chunkData.cols << std::endl;
+#endif
+    } else {
+#ifdef DEBUG
+        std::cout << "Failed to read Data region. Failed to open FILE: " << inputFile << std::endl;
+#endif
+        exit(1);
+    } 
+    return chunkData;
+}
+
+cv::Mat DataRegionFactory::loadDefault(DenseDataRegion2D *dr2D, std::string path, bool ssd) {
+	cv::Mat chunkData;
+    if (dr2D->getOutputExtension() == DataRegion::PBM) {
+        std::string inputFile;
+
+        if (dr2D->getIsAppInput()) {
+            inputFile = dr2D->getInputFileName();
+            std::cout << "###inputFile:" << inputFile << std::endl;
+        }else{
+            if (ssd) {
+                inputFile = createOutputFileName(dr2D, path, ".pbm");
+            } else {
+                inputFile = createOutputFileName(dr2D, path, ".tiff");
+            }
+        }
+        //############### Binary Image ###############
+        chunkData = cv::imread(inputFile, -1); // read image
+        if (chunkData.empty()) {
+            std::cout << "Failed to read as image:" << inputFile << std::endl;
+
+//  		inputFile = "";
+//	    	if(!path.empty())inputFile.append(path);
+//		    inputFile.append(dr2D->getName());
+//			inputFile.append("-").append(dr2D->getId());
+//		    inputFile.append("-").append(number2String(dr2D->getVersion()));
+//			inputFile.append("-").append(number2String(dr2D->getTimestamp()));
+
+            //############### Labeled Image ###############
+            //Failed to read as an image.
+            //Try to read as txt file (labeled image)
+            std::cout << "Trying to read as text file:" << inputFile << std::endl;
+            std::ifstream infile(inputFile.c_str());
+            int columns, rows;
+            int a;
+            infile >> columns >> rows;
+            chunkData = cv::Mat(rows, columns, CV_32S);
+
+            //Read image from text file and find the bounding boxes
+            for (int i = 0; i < rows; ++i) {
+                for (int j = 0; j < columns; ++j) {
+                    infile >> a;
+                    chunkData.at<int>(i, j) = a;
+                }
+            }
+            if (chunkData.empty()) {
+                std::cout << "Failed to read labeled image as text file:" << inputFile << std::endl;
+
+            } else {
+                BoundingBox ROIBB(Point(0, 0, 0), Point(chunkData.cols - 1, chunkData.rows - 1, 0));
+                dr2D->setData(chunkData);
+                dr2D->setBb(ROIBB);
+            }
+
+        } else {
+            BoundingBox ROIBB(Point(0, 0, 0), Point(chunkData.cols - 1, chunkData.rows - 1, 0));
+            dr2D->setData(chunkData);
+            dr2D->setBb(ROIBB);
+        }
+        std::cout << "chuckData Image Type: " << chunkData.type() << std::endl;
+    }   
+
+    return chunkData;
+}
+
+cv::Mat DataRegionFactory::loadSvs() {
+	cv::Mat chunkData;
+
+    //TODO: Implement loading a matrix given an big image and the bounding box of interest
+
+    return chunkData;
+}
 
 bool DataRegionFactory::readDDR2DFS(DataRegion **dataRegion, int chunkId, std::string path, bool ssd){
 	int drType = -1;
@@ -167,89 +265,16 @@ bool DataRegionFactory::readDDR2DFS(DataRegion **dataRegion, int chunkId, std::s
 			std::cout << "readDDR2DFS: dataRegion: " << dr2D->getName() << " id: " << dr2D->getId() << " version:" <<
 			dr2D->getVersion() << " outputExt: " << dr2D->getOutputExtension() << std::endl;
 #endif
-			if (dr2D->getOutputExtension() == DataRegion::XML) {
-				// if it is an Mat stored as a XML file
-				std::string inputFile;
-
-				if(dr2D->getIsAppInput()){
-					inputFile = dr2D->getInputFileName();
-				}else{
-					inputFile = createOutputFileName(dr2D, path, ".xml");
-				}
-				cv::FileStorage fs2(inputFile, cv::FileStorage::READ);
-				if (fs2.isOpened()) {
-					fs2["mat"] >> chunkData;
-					fs2.release();
-#ifdef DEBUG
-					std::cout << "LOADING XML input data: " << inputFile << " dataRegion: " << dr2D->getName() <<
-					" chunk.rows: " << chunkData.rows << " chunk.cols: " << chunkData.cols << std::endl;
-#endif
-				} else {
-#ifdef DEBUG
-					std::cout << "Failed to read Data region. Failed to open FILE: " << inputFile << std::endl;
-#endif
-					exit(1);
-				}
-			} else {
-				if (dr2D->getOutputExtension() == DataRegion::PBM) {
-					std::string inputFile;
-
-					if (dr2D->getIsAppInput()) {
-						inputFile = dr2D->getInputFileName();
-						std::cout << "###inputFile:" << inputFile << std::endl;
-					}else{
-						if (ssd) {
-							inputFile = createOutputFileName(dr2D, path, ".pbm");
-						} else {
-							inputFile = createOutputFileName(dr2D, path, ".tiff");
-						}
-					}
-					//############### Binary Image ###############
-					chunkData = cv::imread(inputFile, -1); // read image
-					if (chunkData.empty()) {
-						std::cout << "Failed to read as image:" << inputFile << std::endl;
-
-//						inputFile = "";
-//						if(!path.empty())inputFile.append(path);
-//						inputFile.append(dr2D->getName());
-//						inputFile.append("-").append(dr2D->getId());
-//						inputFile.append("-").append(number2String(dr2D->getVersion()));
-//						inputFile.append("-").append(number2String(dr2D->getTimestamp()));
-
-						//############### Labeled Image ###############
-						//Failed to read as an image.
-						//Try to read as txt file (labeled image)
-						std::cout << "Trying to read as text file:" << inputFile << std::endl;
-						std::ifstream infile(inputFile.c_str());
-						int columns, rows;
-						int a;
-						infile >> columns >> rows;
-						chunkData = cv::Mat(rows, columns, CV_32S);
-
-						//Read image from text file and find the bounding boxes
-						for (int i = 0; i < rows; ++i) {
-							for (int j = 0; j < columns; ++j) {
-								infile >> a;
-								chunkData.at<int>(i, j) = a;
-							}
-						}
-						if (chunkData.empty()) {
-							std::cout << "Failed to read labeled image as text file:" << inputFile << std::endl;
-
-						} else {
-							BoundingBox ROIBB(Point(0, 0, 0), Point(chunkData.cols - 1, chunkData.rows - 1, 0));
-							dr2D->setData(chunkData);
-							dr2D->setBb(ROIBB);
-						}
-
-					} else {
-						BoundingBox ROIBB(Point(0, 0, 0), Point(chunkData.cols - 1, chunkData.rows - 1, 0));
-						dr2D->setData(chunkData);
-						dr2D->setBb(ROIBB);
-					}
-					std::cout << "chuckData Image Type: " << chunkData.type() << std::endl;
-				}
-			}
+			switch (dr2D->getOutputExtension()) {
+                case DataRegion::XML:
+                    chunkData = loadXml(dr2D, path);    
+                    break;
+                case DataRegion::SVS:
+                    chunkData = loadSvs();    
+                    break;
+                default:
+                    chunkData = loadDefault(dr2D, path, ssd);    
+            }
 			// delete father class instance and attribute the specific data region read
 			delete (*dataRegion);
 			(*dataRegion) = (DataRegion *) dr2D;

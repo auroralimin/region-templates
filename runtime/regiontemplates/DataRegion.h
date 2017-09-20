@@ -84,6 +84,7 @@ public:
 	// output storage extensions
 	static const int PBM = 1;
 	static const int XML = 2;
+	static const int SVS = 3;
 
 	DataRegion();
 	virtual ~DataRegion();

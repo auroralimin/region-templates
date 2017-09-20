@@ -41,6 +41,10 @@ private:
 	static bool writeDr2DUn(DataRegion2DUnaligned* dr, std::string outputFile);
 	static bool readDr2DUn(DataRegion2DUnaligned* dr, std::string inputFile);
 
+    static cv::Mat loadXml(DenseDataRegion2D *dr2D, std::string path);
+    static cv::Mat loadSvs();
+    static cv::Mat loadDefault(DenseDataRegion2D *dr2D, std::string path, bool ssd);
+
 	friend class CacheComponent;
 	friend class Cache;
 public:
