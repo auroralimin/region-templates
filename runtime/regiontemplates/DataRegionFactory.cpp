@@ -5,7 +5,12 @@
  *      Author: george
  */
 
+#include <cstdio>
+
 #include "DataRegionFactory.h"
+#include "openslide.h"
+#include "utilitiesSvs.h"
+
 std::string number2String(int x){
 	std::ostringstream ss;
 	ss<<x;
@@ -226,20 +231,47 @@ cv::Mat DataRegionFactory::loadDefault(DenseDataRegion2D *dr2D, std::string path
     return chunkData;
 }
 
-cv::Mat DataRegionFactory::loadSvs() {
-	cv::Mat chunkData;
+cv::Mat DataRegionFactory::loadSvs(DenseDataRegion2D *dr2D) {
+    if(!dr2D->getIsAppInput()){
+        std::cout << "Failed to read Data region. Svs images must be for input only." << std::endl;
+        exit(1);
+    }
 
-    //TODO: Implement loading a matrix given an big image and the bounding box of interest
+    std::string inputFile = dr2D->getInputFileName();
+    BoundingBox bb = dr2D->getBb();
+    Point ub = bb.getUb(), lb = bb.getLb();
+
+    int64_t topLeftX = ub.getX();
+    int64_t topLeftY = ub.getY();
+
+    int64_t thisTileSizeX = ub.getX() - lb.getX();
+    int64_t thisTileSizeY = ub.getY() - lb.getY();
+
+    uint32_t* dest = new uint32_t[thisTileSizeX*thisTileSizeY];
+    openslide_t *osr = openslide_open(inputFile.c_str());
+    int32_t lSizeLevel = 0;
+    int64_t lSizeW = 0, lSizeH = 0;
+    gth818n::getLargestLevelSize(osr, lSizeLevel, lSizeW, lSizeH);
+
+    openslide_read_region(osr, dest, topLeftX, topLeftY, lSizeLevel, thisTileSizeX, thisTileSizeY);
+
+    cv::Mat chunkData(thisTileSizeY, thisTileSizeX, CV_8UC3, cv::Scalar(0, 0, 0));
+    gth818n::osrRegionToCVMat(dest, chunkData);
+
+    delete[] dest;
+    char tileName[1000];
+    sprintf(tileName, "%s_%d_%d_%d_%d.tif", inputFile.c_str(), ub.getX(), ub.getY(), lb.getX(), lb.getY());
+    cv::imwrite(tileName, chunkData);
 
     return chunkData;
 }
 
 bool DataRegionFactory::readDDR2DFS(DataRegion **dataRegion, int chunkId, std::string path, bool ssd){
-	int drType = -1;
-	// it is application input, the type is provide when user creates the
-	// data region. Otherwise, a .loc file exists and it stores the data region type
-	if((*dataRegion)->getIsAppInput() == true){
-		drType = (*dataRegion)->getType();
+    int drType = -1;
+    // it is application input, the type is provide when user creates the
+    // data region. Otherwise, a .loc file exists and it stores the data region type
+    if((*dataRegion)->getIsAppInput() == true){
+        drType = (*dataRegion)->getType();
 
 	}else{
 		// returns -1 if lock file is not found
@@ -258,6 +290,7 @@ bool DataRegionFactory::readDDR2DFS(DataRegion **dataRegion, int chunkId, std::s
 			dr2D->setVersion((*dataRegion)->getVersion());
 			dr2D->setIsAppInput((*dataRegion)->getIsAppInput());
 			dr2D->setInputFileName((*dataRegion)->getInputFileName());
+			dr2D->setBb((*dataRegion)->getBb());
 
 
 			cv::Mat chunkData;
@@ -270,7 +303,7 @@ bool DataRegionFactory::readDDR2DFS(DataRegion **dataRegion, int chunkId, std::s
                     chunkData = loadXml(dr2D, path);    
                     break;
                 case DataRegion::SVS:
-                    chunkData = loadSvs();    
+                    chunkData = loadSvs(dr2D);    
                     break;
                 default:
                     chunkData = loadDefault(dr2D, path, ssd);    
