@@ -18,7 +18,7 @@ private:
 	int x, y, z;
 public:
 	Point(){};
-	Point(int x, int y, int z);
+	Point(int x, int y, int z = 0);
 	~Point(){};
 
 	int getX() const;
@@ -39,8 +39,6 @@ public:
 	BoundingBox();
 	BoundingBox(Point lb, Point ub);
 	virtual ~BoundingBox();
-
-
 
 	unsigned int sizeCoordX();
 	unsigned int sizeCoordY();
