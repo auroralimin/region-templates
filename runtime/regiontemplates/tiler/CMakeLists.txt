@@ -3,8 +3,7 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-set(projName "pipeline20141229")
-project(${projName})
+project(tiler)
 
 set(CMAKE_C_FLAGS "-std=c99")
 
@@ -37,13 +36,13 @@ set(Libraries ${Libraries}
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-find_package (GLIB)
-if (HAVE_GLIB)
-include_directories(${GLIB_INCLUDES})
-set(Libraries ${Libraries}
-    ${GLIB_LIBRARIES}
-    )
-endif(HAVE_GLIB)
+#find_package (GLIB)
+#if (HAVE_GLIB)
+#include_directories(${GLIB_INCLUDES})
+#set(Libraries ${Libraries}
+#    ${GLIB_LIBRARIES}
+#    )
+#endif(HAVE_GLIB)
 
 
 # ################################################################################
@@ -101,23 +100,20 @@ endif(NOT OpenSlide_INSTALLATION_PATH)
 
 include_directories(${OpenSlide_INSTALLATION_PATH}/include/openslide/)
 
-set(OpenSlideLibs
-  ${OpenSlide_INSTALLATION_PATH}/lib/libopenslide.so
-  )
-
+add_library(UtilitiesSvs ../Utils/utilitiesSvs.cxx)
 
 #add_library(openSliceTools openslide-tools-common.c)
 
-add_library(myLib utilitiesSvs.cxx)
+add_library(TilerLib Tiler.cpp)
 
 ################################################################################
 # put all libs together
 set(Libraries
-    myLib
+    TilerLib
+    UtilitiesSvs
     ${OpenSlideLibs}
     ${Libraries}
     )
-
 
 ################################################################################
 # include dir
@@ -127,9 +123,8 @@ include_directories("${PROJECT_BINARY_DIR}")
 #include_directories("${PROJECT_SOURCE_DIR}/imageProcessing/registration/")
 #include_directories(${ALGLIB_PATH})
 
-
-
 ################################################################################
 # include sub-dirs
-add_subdirectory(tiler)
+add_subdirectory(examples)
 #add_subdirectory(test)
+

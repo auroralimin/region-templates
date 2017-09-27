@@ -119,3 +119,4 @@ endif(USE_DATA_SPACES)
 if(USE_REGION_TEMPLATES)
 	target_link_libraries("${libname}" regiontemplates)
 endif(USE_REGION_TEMPLATES)
+

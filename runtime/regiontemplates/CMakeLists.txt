@@ -20,8 +20,7 @@ find_package( OpenCV REQUIRED )
 
 # Source files used by the Runtime System
 set(librtemplates BasicDataSource.cpp BoundingBox.cpp DataRegion.cpp ParameterSet.cpp DataRegionFactory.cpp DenseDataRegion2D.cpp DataRegion2DUnaligned.cpp
-    ../../new-tiler/utilitiesSvs.cxx
-	RegionTemplate.cpp ./Utils/FileUtils.cpp RTPipelineComponentBase.cpp RegionTemplateCollection.cpp TaskIO.cpp
+    RegionTemplate.cpp ./Utils/utilitiesSvs.cxx ./Utils/FileUtils.cpp RTPipelineComponentBase.cpp RegionTemplateCollection.cpp TaskIO.cpp
 	RTCInterface.cpp ./cache/Cache.cpp ./cache/CacheComponent.cpp ./cache/CachePolicy.cpp ./cache/CachePolicyLRU.cpp ./cache/TaskMoveDR2Global.cpp
 	./autotuning/geneticalgorithm/GeneticAlgorithm.cpp ./autotuning/geneticalgorithm/Initialization/RandomInitialization.cpp
 	./autotuning/geneticalgorithm/Mating/CutSwapMating.cpp ./autotuning/geneticalgorithm/Mutation/RandomMutation.cpp ./autotuning/geneticalgorithm/Propagation/EliteMembersPropagation.cpp
@@ -40,10 +39,7 @@ include_directories(${OpenSlide_INSTALLATION_PATH}/include/openslide/)
 set(OpenSlideLibs
   ${OpenSlide_INSTALLATION_PATH}/lib/libopenslide.so
   )
-################################################################################
-# new-tiler
 
-include_directories(../../new-tiler)
 ################################################################################
 
 # Source files used by the Runtime System with ActiveHarmony
@@ -61,6 +57,7 @@ endif(USE_ACTIVE_HARMONY)
 
 set( libname regiontemplates )
 
+include_directories(./tiler/)
 include_directories(./Utils/)
 include_directories(${Runtime_SOURCE_DIR})
 include_directories(${Runtime_SOURCE_DIR}/ResourceManager)
@@ -98,11 +95,14 @@ endif (USE_ACTIVE_HARMONY)
 #target_link_libraries("${libname}" runtimesystem)
 
 option (RTEMPLATES_EXAMPLES "Enable compilation of Region Templates examples" OFF)
-
 if(RTEMPLATES_EXAMPLES)
 	add_subdirectory("examples")
 endif(RTEMPLATES_EXAMPLES)
 
+option (TILER_EXAMPLES "Enable compilation of Tiler examples" OFF)
+if(TILER_EXAMPLES)
+ 	add_subdirectory("tiler")
+endif(TILER_EXAMPLES)
 
 option (RTEMPLATES_UNIT_TESTS "Enable compilation of Region Templates unit tests" OFF)
 
@@ -115,3 +115,4 @@ if(RTEMPLATES_UNIT_TESTS)
 	include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 	add_subdirectory("tests")
 endif(RTEMPLATES_UNIT_TESTS)
+

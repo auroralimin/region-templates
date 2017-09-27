@@ -21,18 +21,14 @@
 /// function that has ANYTHING to do with SVS will be put here.
 ////////////////////////////////////////////////////////////////////////////////
 
-
-
-#ifndef utilitiesSvs_h_
-#define utilitiesSvs_h_
-
+#ifndef UTILITIES_SVS_H_
+#define UTILITIES_SVS_H_
 
 // openslide
 #include "openslide.h"
 
 // openCV
 #include <opencv2/opencv.hpp>
-
 
 namespace gth818n
 {
@@ -44,5 +40,5 @@ namespace gth818n
 
 }// namepspace
 
-
 #endif
+
