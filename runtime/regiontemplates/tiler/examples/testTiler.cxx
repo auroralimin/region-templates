@@ -20,9 +20,16 @@ int main(int argc, char **argv)
     int64_t tSizes[3] = {200, 300, 500};
 
     Tiler tiler;
-    tiler.defaultSplit(imgName, outPrefix + "_default", 500);
-    tiler.approxSplit(imgName, outPrefix + "_approx", pGpu, pCpu, tSizes);
-    tiler.divSplit(imgName, outPrefix + "_div", pGpu, pCpu, oTiles);
+    std::vector<BoundingBox> bTiles;
+    
+    //bTiles = tiler.defaultSplit(imgName, 500);
+    //tiler.printTiles(bTiles);
+
+    //bTiles = tiler.approxSplit(imgName, pGpu, pCpu, tSizes);
+    //tiler.printTiles(bTiles);
+
+    bTiles = tiler.divSplit(imgName, pGpu, pCpu, oTiles);
+    tiler.printTiles(bTiles);
 
     return 0;
 }

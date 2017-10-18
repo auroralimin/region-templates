@@ -14,6 +14,9 @@ if(OPENMP_FOUND)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
+include_directories(${RegionTemplate_SOURCE_DIR})
+link_directories(${RegionTemplate_SOURCE_DIR})
+
 # ################################################################################
 # # ITK, Should be with ItkVtkGlue
 # find_package (ITK)
@@ -101,6 +104,7 @@ endif(NOT OpenSlide_INSTALLATION_PATH)
 include_directories(${OpenSlide_INSTALLATION_PATH}/include/openslide/)
 
 add_library(UtilitiesSvs ../Utils/utilitiesSvs.cxx)
+add_library(BoundingBox ../BoundingBox.cpp)
 
 #add_library(openSliceTools openslide-tools-common.c)
 
@@ -111,6 +115,7 @@ add_library(TilerLib Tiler.cpp)
 set(Libraries
     TilerLib
     UtilitiesSvs
+    BoundingBox
     ${OpenSlideLibs}
     ${Libraries}
     )
