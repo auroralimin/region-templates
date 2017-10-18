@@ -11,8 +11,6 @@
 #include <iostream>
 #include <string.h>
 
-
-
 class Point{
 private:
 	int x, y, z;
@@ -82,3 +80,4 @@ struct BBComparator{
 	}
 };
 #endif /* BOUNDINGBOX_H_ */
+

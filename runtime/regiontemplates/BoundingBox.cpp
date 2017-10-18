@@ -181,3 +181,4 @@ void BoundingBox::setUb(const Point& ub) {
 int BoundingBox::size() {
 	return sizeof(int)*6;
 }
+
