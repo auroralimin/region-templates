@@ -62,6 +62,7 @@ RegionTemplateCollection* RTFromFiles(std::string inputFolderPath){
 		//ddr2d->setId(fileList[i]);
 		ddr2d->setIsAppInput(true);
 		ddr2d->setInputFileName(fileList[i]);
+        ddr2d->setOutputExtension(4);
 //		ddr2d->setInBds(new FileSystemImageDataSource(fileList[i]));
 		RegionTemplate *rt = new RegionTemplate();
 		rt->setName("tile");

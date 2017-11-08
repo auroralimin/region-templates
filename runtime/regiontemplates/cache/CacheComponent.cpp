@@ -241,7 +241,8 @@ bool CacheComponent::insertDR(std::string rtName, std::string rtId, DataRegion* 
 
 DataRegion* CacheComponent::getDR(std::string rtName, std::string rtId,
 								  std::string drName, std::string drId, std::string inputFileName, int timestamp,
-								  int version, bool copyData, bool isAppInput) {
+								  int version, bool copyData, bool isAppInput,
+                                  int outputExtension, BoundingBox bb) {
 	// cache iteration definition
 	std::map<std::string, std::list<DataRegion*> >::iterator cacheIt;
 	DataRegion* retValue = NULL;
@@ -263,6 +264,8 @@ DataRegion* CacheComponent::getDR(std::string rtName, std::string rtId,
 		retValue->setTimestamp(timestamp);
 		retValue->setVersion(version);
 		retValue->setInputFileName(inputFileName);
+        retValue->setOutputExtension(outputExtension);
+        retValue->setBb(bb);
 
 		bool retDRF = DataRegionFactory::readDDR2DFS(&retValue, -1, this->getPath(), this->getDevice() == Cache::SSD);
 

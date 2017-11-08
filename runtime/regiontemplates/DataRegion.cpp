@@ -453,10 +453,12 @@ void DataRegion::print() {
 	std::cout << "\tWorkerId: "<< this->getWorkerId()<< std::endl;
 	std::cout << "\tCacheLevel: " << this->getCacheLevel() << std::endl;
 	std::cout << "\tCachedDataSize: " << this->getCachedDataSize() << std::endl;
+	std::cout << "\tOutputExtension: " << this->getOutputExtension() << std::endl;
+	std::cout << "\tBoundingBox: ";
+    this->getBb().print();
+    std::cout << std::endl;
 
-	this->getBb().print();
-	std::cout << std::endl;
-	std::cout << "\t ROI: ";
+	std::cout << "\tROI: ";
 	this->getROI().print();
 	std::cout << std::endl;
 	std::cout << "\tNumber of data chunks: " << bb2Id.size() << std::endl;

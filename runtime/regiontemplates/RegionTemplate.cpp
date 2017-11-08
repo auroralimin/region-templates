@@ -147,7 +147,8 @@ DataRegion* RegionTemplate::getDataRegion(std::string drName, std::string drId, 
 						retValue = auxCache->getDR(this->getName(), this->getId(), retValue->getName(),
 												   retValue->getId(), retValue->getInputFileName(),
 												   retValue->getTimestamp(), retValue->getVersion(), retValue->getType(), true,
-												   retValue->getIsAppInput(), retValue->getInputFileName());
+												   retValue->getIsAppInput(), retValue->getInputFileName(),
+                                                   retValue->getOutputExtension(), retValue->getBb());
 
 					}else{
 						std::cout << "RT::getDataRegion: CACHE is NULL. rtName: "<< this->getName() << std::endl;

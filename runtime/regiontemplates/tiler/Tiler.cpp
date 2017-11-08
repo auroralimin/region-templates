@@ -6,8 +6,6 @@
 
 #include "utilitiesSvs.h"
 
-#define DEBUG false
-
 Tiler::Tiler() {}
 
 Tiler::~Tiler() {}

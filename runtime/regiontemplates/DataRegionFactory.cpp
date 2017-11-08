@@ -8,7 +8,6 @@
 #include <cstdio>
 
 #include "DataRegionFactory.h"
-#include "openslide.h"
 #include "utilitiesSvs.h"
 
 std::string number2String(int x){
@@ -290,8 +289,8 @@ bool DataRegionFactory::readDDR2DFS(DataRegion **dataRegion, int chunkId, std::s
 			dr2D->setVersion((*dataRegion)->getVersion());
 			dr2D->setIsAppInput((*dataRegion)->getIsAppInput());
 			dr2D->setInputFileName((*dataRegion)->getInputFileName());
+			dr2D->setOutputExtension((*dataRegion)->getOutputExtension());
 			dr2D->setBb((*dataRegion)->getBb());
-
 
 			cv::Mat chunkData;
 #ifdef DEBUG
@@ -306,6 +305,9 @@ bool DataRegionFactory::readDDR2DFS(DataRegion **dataRegion, int chunkId, std::s
                     chunkData = loadSvs(dr2D);    
                     break;
                 default:
+                    std::cout << "\n\nDEFAULTTTTTTTTTTTTTTTTTT:" << std::endl;
+                    dr2D->print();
+                    dr2D->setOutputExtension(DataRegion::PBM);
                     chunkData = loadDefault(dr2D, path, ssd);    
             }
 			// delete father class instance and attribute the specific data region read

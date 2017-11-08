@@ -324,9 +324,11 @@ int Cache::insertDR(std::string rtName, std::string rtId, DataRegion* dataRegion
 // Otherwise, we will have to find it into a global storage.
 
 
-DataRegion *Cache::getDR(std::string rtName, std::string rtId, std::string drName, std::string drId,
-						 std::string inputFileName,
-						 int timestamp, int version, int drType, bool copyData, bool isInput, std::string inputPath) {
+DataRegion *Cache::getDR(std::string rtName, std::string rtId, std::string drName,
+                         std::string drId, std::string inputFileName,
+						 int timestamp, int version, int drType, bool copyData,
+                         bool isInput, std::string inputPath,
+                         int outputExtension, BoundingBox bb) {
 
 	DataRegion* retValue = NULL;
 	long long init = Util::ClockGetTime();
@@ -338,7 +340,7 @@ DataRegion *Cache::getDR(std::string rtName, std::string rtId, std::string drNam
 			//			if(isLocal || this->cacheLayers[i]->getType() == Cache::GLOBAL){
 			//this->cacheLayers[i]->lock();
 			retValue = this->cacheLayers[i]->getDR(rtName, rtId, drName, drId, inputFileName, timestamp, version,
-												   copyData, isInput);
+												   copyData, isInput, outputExtension, bb);
 			//this->cacheLayers[i]->unlock();
 
 			// update instrumentation
@@ -381,7 +383,8 @@ DataRegion *Cache::getDR(std::string rtName, std::string rtId, std::string drNam
 				retValue->setVersion(version);
 				retValue->setIsAppInput(isInput);
 				retValue->setInputFileName(inputPath);
-
+				retValue->setOutputExtension(outputExtension);
+				retValue->setBb(bb);
 
 				DataRegionFactory::readDDR2DFS(&retValue, -1);
 
@@ -458,8 +461,9 @@ void Cache::setWorkerId(int workerId) {
 }
 
 bool Cache::move2Global(std::string rtName, std::string rtId, std::string drName,
-						std::string drId, std::string inputName, int timestamp, int version, int fromLevel,
-						int toLevel) {
+						std::string drId, std::string inputName, int timestamp,
+                        int version, int fromLevel, int toLevel,
+                        int outputExtension, BoundingBox bb) {
 	bool retValue = false;
 	int levelToStoreDR = toLevel;
 	if(levelToStoreDR == -1){
@@ -480,8 +484,10 @@ bool Cache::move2Global(std::string rtName, std::string rtId, std::string drName
 		}
 
 		// if data region is within this layer, get it from that cache layer
-		auxDR2Move = this->cacheLayers[i]->getDR(rtName, rtId, drName, drId, inputName, timestamp, version, true,
-												 false);
+		auxDR2Move = this->cacheLayers[i]->getDR(rtName, rtId, drName, drId,
+                                                 inputName, timestamp, version,
+                                                 true, false,
+                                                 outputExtension, bb);
 
 		//auxDR2Move = this->cacheLayers[i]->getAndDelete(rtName, rtId, drName, drId, timestamp, version);
 

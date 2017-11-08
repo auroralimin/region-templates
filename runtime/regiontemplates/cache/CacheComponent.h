@@ -57,7 +57,8 @@ public:
 
 	virtual DataRegion *getDR(std::string rtName, std::string rtId, std::string drName, std::string drId,
 							  std::string inputFileName, int timestamp = 0, int version = 0, bool copyData = true,
-							  bool isLocal = true);
+							  bool isLocal = true,
+                              int outputExtension = 1, BoundingBox bb = BoundingBox());
 
 	// remove data region from cache and return it. GetDR followed by deleteDR. returnd the DR or NULL if its not found
 	virtual DataRegion *getAndDelete(std::string rtName, std::string rtId, std::string drName,
