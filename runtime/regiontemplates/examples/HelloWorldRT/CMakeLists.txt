@@ -28,8 +28,6 @@ include_directories(${nscalesrcdir}/common)
 include_directories(${nscalesrcdir}/features)
 include_directories(${nscalesrcdir}/normalization)
 
-
-
 # Make sure the compiler can find the library in runtime system directory
 link_directories(${Runtime_SOURCE_DIR})
 # nscale lib dir
@@ -39,7 +37,7 @@ link_directories(${NSCALE_BUILD_DIR}/lib)
 set(libname componentsrt)
 
 # Source files used by the Runtime System
-set( libcomponentssrcs Segmentation.cpp FeatureExtraction.cpp TaskSegmentation.cpp TaskFeatures.cpp)
+set( libcomponentssrcs Segmentation.cpp FeatureExtraction.cpp TaskSegmentation.cpp TaskFeatures.cpp ../../tiler/Tiler.cpp )
 
 # Add rule to generate the Runtime System, as a shared library (.so)
 add_library("${libname}" SHARED ${libcomponentssrcs})

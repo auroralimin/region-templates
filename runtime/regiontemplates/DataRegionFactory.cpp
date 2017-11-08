@@ -231,20 +231,24 @@ cv::Mat DataRegionFactory::loadDefault(DenseDataRegion2D *dr2D, std::string path
 }
 
 cv::Mat DataRegionFactory::loadSvs(DenseDataRegion2D *dr2D) {
+    /* TODO: solve bug that changes dataRegion when trying to access isAppInput
     if(!dr2D->getIsAppInput()){
         std::cout << "Failed to read Data region. Svs images must be for input only." << std::endl;
         exit(1);
     }
+    */
 
     std::string inputFile = dr2D->getInputFileName();
     BoundingBox bb = dr2D->getBb();
     Point ub = bb.getUb(), lb = bb.getLb();
 
+    dr2D->print();
+
     int64_t topLeftX = ub.getX();
     int64_t topLeftY = ub.getY();
 
-    int64_t thisTileSizeX = ub.getX() - lb.getX();
-    int64_t thisTileSizeY = ub.getY() - lb.getY();
+    int64_t thisTileSizeX = lb.getX() - ub.getX();
+    int64_t thisTileSizeY = lb.getY() - ub.getY();
 
     uint32_t* dest = new uint32_t[thisTileSizeX*thisTileSizeY];
     openslide_t *osr = openslide_open(inputFile.c_str());
@@ -258,9 +262,9 @@ cv::Mat DataRegionFactory::loadSvs(DenseDataRegion2D *dr2D) {
     gth818n::osrRegionToCVMat(dest, chunkData);
 
     delete[] dest;
-    char tileName[1000];
-    sprintf(tileName, "%s_%d_%d_%d_%d.tif", inputFile.c_str(), ub.getX(), ub.getY(), lb.getX(), lb.getY());
-    cv::imwrite(tileName, chunkData);
+    std::string name =  "temp/" + dr2D->getId() + ".tiff";
+    cv::imwrite(name.c_str(), chunkData);
+    dr2D->setData(chunkData);
 
     return chunkData;
 }
@@ -305,8 +309,6 @@ bool DataRegionFactory::readDDR2DFS(DataRegion **dataRegion, int chunkId, std::s
                     chunkData = loadSvs(dr2D);    
                     break;
                 default:
-                    std::cout << "\n\nDEFAULTTTTTTTTTTTTTTTTTT:" << std::endl;
-                    dr2D->print();
                     dr2D->setOutputExtension(DataRegion::PBM);
                     chunkData = loadDefault(dr2D, path, ssd);    
             }

@@ -34,7 +34,7 @@ int Segmentation::run()
 			// create id for the output data region
 			FileUtils futils(".tif");
 			std::string id = bgr->getId();
-			std::string outputId = futils.replaceExt(id, ".tif", ".mask.pbm");
+			std::string outputId = futils.replaceExt(id, ".tiff", ".mask.pbm");
 
 			// Create output data region
 			DenseDataRegion2D *mask = new DenseDataRegion2D();
