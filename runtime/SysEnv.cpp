@@ -68,10 +68,12 @@ void SysEnv::parseInputArguments(int argc, char**argv){
 	cacheOnRead = false;
 	componentDataAwareSchedule = false;
 
+    /* TODO: remove comment
 	std::cout << "Parse arguments system: argc: "<< argc <<std::endl;
 	for(int i = 0; i < argc; i++){
 		std::cout << "argv["<<i<<"]="<<argv[i]<< std::endl;
 	}
+    */
 
 	// Used for parameters parsing
 	string policyArgumentValue;

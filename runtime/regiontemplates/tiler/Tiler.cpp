@@ -92,6 +92,11 @@ std::vector<BoundingBox> Tiler::approxSplit(const char* imgName,
 
 std::vector<BoundingBox> Tiler::divSplit(const char* imgName, int pGpu,
                                          int pCpu, int oTiles[3]) {
+    if ((oTiles[0] > oTiles[1]) || (oTiles[1] > oTiles[2])) {
+        std::cerr << "Error: Gpu order must be lower than average order and "
+                  << "average order must be lower than Cpu order." << std::endl;
+    }
+
     int pAve = 100 - pGpu - pCpu;
     if (pAve < 0) {
         std::cerr << "Error: Gpu percentage plus Cpu percentage\

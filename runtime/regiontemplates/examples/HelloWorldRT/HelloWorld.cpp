@@ -20,18 +20,47 @@
 
 #define NUM_PIPELINE_INSTANCES	1
 
+#define OFF "\e[0m"
+#define RED "\033[1;31m"
 
-void parseInputArguments(int argc, char**argv, std::string &inputFolder){
+void parseInputArguments(int argc, char **argv, std::string &inputFolder,
+                         int *pGpu, int *pCpu, int oTiles[3]){
 	// Used for parameters parsing
 	for(int i = 0; i < argc-1; i++){
 		if(argv[i][0] == '-' && argv[i][1] == 'i'){
-			inputFolder = argv[i+1];
-		}
+			inputFolder = argv[1+(i++)];
+		}else if(argv[i][0] == '-' && argv[i][1] == 'p' && argv[i][2] == 'g'){
+            *pGpu = atoi(argv[1+(i++)]);
+		}else if(argv[i][0] == '-' && argv[i][1] == 'p' && argv[i][2] == 'c'){
+            *pCpu = atoi(argv[1+(i++)]);
+		}else if(argv[i][0] == '-' && argv[i][1] == 'o' && argv[i][2] == 'g'){
+            oTiles[0] = atoi(argv[1+(i++)]);
+		}else if(argv[i][0] == '-' && argv[i][1] == 'o' && argv[i][2] == 'a'){
+            oTiles[1] = atoi(argv[1+(i++)]);
+		}else if(argv[i][0] == '-' && argv[i][1] == 'o' && argv[i][2] == 'c'){
+            oTiles[2] = atoi(argv[1+(i++)]);
+        }
 	}
 }
 
+void printInputArguments(std::string inputFolderPath,
+                         int pGpu, int pCpu, int oTiles[3]){
+    std::cout << RED << "[SPLIT] " << OFF;
+    std::cout << "Input: " << inputFolderPath << std::endl;
+    std::cout << RED << "[SPLIT] " << OFF;
+    std::cout << "Gpu Percentage: " << pGpu << std::endl;
+    std::cout << RED << "[SPLIT] " << OFF;
+    std::cout << "Cpu Percentage: " << pCpu << std::endl;
+    std::cout << RED << "[SPLIT] " << OFF;
+    std::cout << "Gpu Order: " << oTiles[0] << std::endl;
+    std::cout << RED << "[SPLIT] " << OFF;
+    std::cout << "Ave Order: " << oTiles[1] << std::endl;
+    std::cout << RED << "[SPLIT] " << OFF;
+    std::cout << "Cpu Order: " << oTiles[2] << std::endl;
+}
 
-RegionTemplateCollection* RTFromFiles(std::string inputFolderPath){
+RegionTemplateCollection* RTFromFiles(std::string inputFolderPath,
+                                      int pGpu, int pCpu, int oTiles[3]){
 	// Search for input files in folder path
 	FileUtils fileUtils("svs");
 	std::vector<std::string> fileList;
@@ -39,19 +68,21 @@ RegionTemplateCollection* RTFromFiles(std::string inputFolderPath){
 	RegionTemplateCollection* rtCollection = new RegionTemplateCollection();
 	rtCollection->setName("inputimage");
 
+    /* TODO: remove comment
 	std::cout << "Input Folder: "<< inputFolderPath <<std::endl;
-
 	cout << endl << " FILELIST SIZE: " << fileList.size() << endl;
+    */
+    printInputArguments(inputFolderPath, pGpu, pCpu, oTiles);
 
 	// Create one region template instance for each input data file
 	// (creates representations without instantiating them)
     Tiler tiler;
 	for(int i = 0; i < fileList.size(); i++){
-		cout << endl << " FILE: " << fileList[i] << endl;
+		// TODO: remove comment
+        // cout << endl << " FILE: " << fileList[i] << endl;
 
-        int oTiles[3] = {2, 3, 4};
         std::vector<BoundingBox> bTiles;
-        bTiles = tiler.divSplit(fileList[i].c_str(), 100, 0, oTiles);
+        bTiles = tiler.divSplit(fileList[i].c_str(), pGpu, pCpu, oTiles);
         tiler.printTiles(bTiles);
 
         std::vector<BoundingBox>::iterator it = bTiles.begin();
@@ -89,11 +120,11 @@ RegionTemplateCollection* RTFromFiles(std::string inputFolderPath){
 int main (int argc, char **argv){
     // Folder when input data images are stored
     std::string inputFolderPath;
+    int pGpu = 100, pCpu = 0, oTiles[3] = {1, 2, 3}; 
     std::vector<RegionTemplate *> inputRegionTemplates;
     RegionTemplateCollection *rtCollection;
 
-    parseInputArguments(argc, argv, inputFolderPath);
-
+    parseInputArguments(argc, argv, inputFolderPath, &pGpu, &pCpu, oTiles);
     // Handler to the distributed execution system environment
     SysEnv sysEnv;
 
@@ -101,7 +132,7 @@ int main (int argc, char **argv){
     sysEnv.startupSystem(argc, argv, "libcomponentsrt.so");
 
     // Create region templates description without instantiating data
-    rtCollection = RTFromFiles(inputFolderPath);
+    rtCollection = RTFromFiles(inputFolderPath, pGpu, pCpu, oTiles);
 
     // Build application dependency graph
 
