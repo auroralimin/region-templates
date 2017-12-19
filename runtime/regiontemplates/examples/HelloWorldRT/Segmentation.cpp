@@ -6,7 +6,10 @@
  */
 
 #include "Segmentation.h"
+#include "TimeUtils.h"
 
+#define OFF "\e[0m"
+#define RED "\033[1;31m"
 
 Segmentation::Segmentation() {
 	this->setComponentName("Segmentation");
@@ -20,9 +23,9 @@ Segmentation::~Segmentation() {
 
 int Segmentation::run()
 {
+    TimeUtils tu("t1");
 
-	// Print name and id of the component instance
-	std::cout << "Executing component: " << this->getComponentName() << " instance id: " << this->getId() <<std::endl;
+    std::cout << "Executing component: " << this->getComponentName() << " instance id: " << this->getId() <<std::endl;
 	RegionTemplate * inputRt = this->getRegionTemplateInstance("tile");
 
 	if(inputRt != NULL){
@@ -83,7 +86,12 @@ mask->setOutputType(DataSourceType::DATA_SPACES);
 	this->executeTask(tB);
 	this->executeTask(tC);*/
 
-	return 0;
+    tu.markTimeUS("t2");
+    std::ostringstream oss;
+    oss << this->getComponentName() << " " << this->getId();
+    tu.markDiffUS("t2", "t1", oss.str()); 
+    tu.printDiffs();
+    tu.outCsv("profiling.csv");
 }
 
 // Create the component factory

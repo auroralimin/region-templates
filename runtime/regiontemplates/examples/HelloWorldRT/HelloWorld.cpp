@@ -11,6 +11,8 @@
 
 #include "Tiler.h"
 #include "FileUtils.h"
+#include "TimeUtils.h"
+#include "OutUtils.h"
 #include "RegionTemplate.h"
 #include "RegionTemplateCollection.h"
 
@@ -19,9 +21,6 @@
 #include "FeatureExtraction.h"
 
 #define NUM_PIPELINE_INSTANCES	1
-
-#define OFF "\e[0m"
-#define RED "\033[1;31m"
 
 void parseInputArguments(int argc, char **argv, std::string &inputFolder,
                          int *pGpu, int *pCpu, int oTiles[3]){
@@ -45,22 +44,24 @@ void parseInputArguments(int argc, char **argv, std::string &inputFolder,
 
 void printInputArguments(std::string inputFolderPath,
                          int pGpu, int pCpu, int oTiles[3]){
-    std::cout << RED << "[SPLIT] " << OFF;
+    std::cout << COLOR(blue) << "[SPLIT] " << OFF;
     std::cout << "Input: " << inputFolderPath << std::endl;
-    std::cout << RED << "[SPLIT] " << OFF;
+    std::cout << COLOR(blue) << "[SPLIT] " << OFF;
     std::cout << "Gpu Percentage: " << pGpu << std::endl;
-    std::cout << RED << "[SPLIT] " << OFF;
+    std::cout << COLOR(blue) << "[SPLIT] " << OFF;
     std::cout << "Cpu Percentage: " << pCpu << std::endl;
-    std::cout << RED << "[SPLIT] " << OFF;
+    std::cout << COLOR(blue) << "[SPLIT] " << OFF;
     std::cout << "Gpu Order: " << oTiles[0] << std::endl;
-    std::cout << RED << "[SPLIT] " << OFF;
+    std::cout << COLOR(blue) << "[SPLIT] " << OFF;
     std::cout << "Ave Order: " << oTiles[1] << std::endl;
-    std::cout << RED << "[SPLIT] " << OFF;
+    std::cout << COLOR(blue) << "[SPLIT] " << OFF;
     std::cout << "Cpu Order: " << oTiles[2] << std::endl;
 }
 
 RegionTemplateCollection* RTFromFiles(std::string inputFolderPath,
                                       int pGpu, int pCpu, int oTiles[3]){
+    TimeUtils tu("t1");
+
 	// Search for input files in folder path
 	FileUtils fileUtils("svs");
 	std::vector<std::string> fileList;
@@ -114,10 +115,16 @@ RegionTemplateCollection* RTFromFiles(std::string inputFolderPath,
         }
     }
 
+    tu.markTimeUS("t2");
+    tu.markDiffUS("t2", "t1", "RFFromFiles"); 
+    tu.printDiffs();
+    tu.outCsv("profiling.csv");
     return rtCollection;
 }
 
 int main (int argc, char **argv){
+    TimeUtils tu("begin");
+
     // Folder when input data images are stored
     std::string inputFolderPath;
     int pGpu = 100, pCpu = 0, oTiles[3] = {1, 2, 3}; 
@@ -134,7 +141,9 @@ int main (int argc, char **argv){
     // Create region templates description without instantiating data
     rtCollection = RTFromFiles(inputFolderPath, pGpu, pCpu, oTiles);
 
-    // Build application dependency graph
+    tu.markTimeUS("init");
+    tu.markDiffUS("init", "begin", "Initialization");
+    tu.printDiff("Initialization");
 
     // Instantiate application dependency graph
     for(int i = 0; i < rtCollection->getNumRTs(); i++){
@@ -157,6 +166,10 @@ int main (int argc, char **argv){
 
     delete rtCollection;
 
+    tu.markTimeUS("end");
+    tu.markDiffUS("end", "begin", "Total"); 
+    tu.printDiff("Total");
+    tu.outCsv("profiling.csv");
     return 0;
 }
 
