@@ -37,7 +37,7 @@ endif(NOT OpenSlide_INSTALLATION_PATH)
 include_directories(${OpenSlide_INSTALLATION_PATH}/include/openslide/)
 
 set(OpenSlideLibs
-  ${OpenSlide_INSTALLATION_PATH}/lib/libopenslide.so
+  ${OpenSlide_INSTALLATION_PATH}/lib/x86_64-linux-gnu/libopenslide.so
   )
 
 ################################################################################

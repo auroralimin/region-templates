@@ -25,10 +25,10 @@ std::vector<BoundingBox> Tiler::defaultSplit(const char* imgName, int64_t tSize,
 
     gth818n::getLargestLevelSize(osr, lSizeLevel, lSizeW, lSizeH);
 
-    if (DEBUG) {
+# ifdef TILER_DEBUG
         std::cout << "Largest level: " << lSizeLevel << " has size: " << lSizeW
             << ", " << lSizeH << std::endl;
-    }
+#endif
 
     nTileW = lSizeW/tSize + 1;
     nTileH = lSizeH/tSize + 1;
@@ -57,16 +57,18 @@ std::vector<BoundingBox> Tiler::approxSplit(const char* imgName,
     lSizeLevel = 0;
 
     gth818n::getLargestLevelSize(osr, lSizeLevel, lSizeW, lSizeH);
-    if (DEBUG) {
+# ifdef TILER_DEBUG
         std::cout << "Largest level: " << lSizeLevel << " has size: " << lSizeW
             << ", " << lSizeH << std::endl;
-    }
+#endif
 
     tSize = tSizes[0];
     nTileW = ((lSizeW*pGpu)/100)/tSize;
     nTileH = (lSizeH/tSize) + 1;
 
-    if (DEBUG) std::cout << "Breaking large tiles..." << std::endl;
+# ifdef TILER_DEBUG
+    std::cout << "Breaking large tiles..." << std::endl;
+#endif
     std::vector<BoundingBox> auxTiles, bTiles = breakTiles();
     int64_t topX = nTileW*tSize;
 
@@ -83,7 +85,9 @@ std::vector<BoundingBox> Tiler::approxSplit(const char* imgName,
     tSize = tSizes[2];
     nTileW = ((lSizeW*pCpu)/100)/tSize;
     nTileH = (lSizeH/tSize) + 1;
-    if (DEBUG) std::cout << "Breaking small tiles..." << std::endl;
+# ifdef TILER_DEBUG
+    std::cout << "Breaking small tiles..." << std::endl;
+#endif
     auxTiles = breakTiles(topX);
     bTiles.insert(bTiles.end(), auxTiles.begin(), auxTiles.end());
 
@@ -115,10 +119,10 @@ std::vector<BoundingBox> Tiler::divSplit(const char* imgName, int pGpu,
 
     gth818n::getLargestLevelSize(osr, lSizeLevel, lSizeW, lSizeH);
     
-    if (DEBUG) {
+# ifdef TILER_DEBUG
         std::cout << "Largest level: " << lSizeLevel << " has size: " << lSizeW
             << ", " << lSizeH << std::endl;
-    }
+#endif
 
     int nTiles[3];
     nTiles[0] = pow(2, oTiles[0]);
@@ -128,10 +132,10 @@ std::vector<BoundingBox> Tiler::divSplit(const char* imgName, int pGpu,
     float wAveP = 100/pow(4, oTiles[1]);
     nTiles[2] = (float)(pCpu/(float)(100/pow(4, oTiles[2])));
     int coordinates[4] = {0, 0, lSizeW, lSizeH};
-    if (DEBUG) {
+# ifdef TILER_DEBUG
         std::cout << "nTiles = {" << nTiles[0] << ", " << nTiles[1] << ", "
             << nTiles[2] << "}" << std::endl;
-    }
+#endif
 
     return recursiveBreak(oTiles, nTiles, coordinates); 
 }
@@ -181,11 +185,10 @@ std::vector<BoundingBox> Tiler::recursiveBreak(int oValue[3], int nValue[3],
         }
         return bTiles;
     }
-    if (DEBUG) {
+# ifdef TILER_DEBUG
         std::cout << "oSum[0] = " << oSum[0] << ", oSum[1] = " << oSum[1]
             << ", oSum[2] = " << oSum[2] << std::endl;
-    }
-
+#endif
     return bTiles;
 }
 
@@ -194,7 +197,9 @@ std::vector<BoundingBox> Tiler::breakTiles(int topX) {
     
     for (int iTileW = 0; iTileW < nTileW; ++iTileW) {
         for (int iTileH = 0; iTileH < nTileH; ++iTileH) {
-            if (DEBUG) std::cout<<iTileW<<", "<<iTileH<<std::endl<<std::flush;
+# ifdef TILER_DEBUG
+            std::cout<<iTileW<<", "<<iTileH<<std::endl<<std::flush;
+#endif
 
             int topLeftX = topX + (iTileW*tSize);
             int topLeftY = (iTileH*tSize);

@@ -8,6 +8,8 @@
 #include "openslide.h"
 #include "BoundingBox.h"
 
+#define TILER_DEBUG false
+
 class Tiler {
     public:
 	    Tiler();
