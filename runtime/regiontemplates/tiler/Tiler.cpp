@@ -124,7 +124,7 @@ std::vector<BoundingBox> Tiler::divSplit(const char* imgName, int pGpu,
             << ", " << lSizeH << std::endl;
 #endif
 
-    int nTiles[3];
+    int nTiles[3] = {0, 0, 0};
     nTiles[0] = pow(2, oTiles[0]);
     float wGpuP = 100/pow(4, oTiles[0]);
     nTiles[0] = (nTiles[0]*nTiles[0]) - (float)(100 - pGpu)/wGpuP;
@@ -160,7 +160,7 @@ std::vector<BoundingBox> Tiler::recursiveBreak(int oValue[3], int nValue[3],
     int x = coordinates[0], y = coordinates[1];
     int w = coordinates[2], h = coordinates[3];
 
-    for (int i = 3; i >= 0; i--) {
+    for (int i = 2; i >= 0; i--) {
         if (oValue[i] == o) {
             if ((oSum[i]+1) <= nValue[i]) {
                 oSum[i]++;
