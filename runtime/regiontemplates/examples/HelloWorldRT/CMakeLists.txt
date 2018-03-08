@@ -51,10 +51,13 @@ target_link_libraries("${libname}" segment featuresAll ${OpenCV_LIBS})
         
 # Create executable to be built from the files listed
 add_executable(HelloWorldRT HelloWorld.cpp)
+add_executable(HelloWorldRT2 HelloWorld2.cpp)
 
 # Link the executable to the runtime system library
 target_link_libraries(HelloWorldRT runtimesystem "${libname}")
 target_link_libraries(HelloWorldRT regiontemplates)
+target_link_libraries(HelloWorldRT2 runtimesystem "${libname}")
+target_link_libraries(HelloWorldRT2 regiontemplates)
 
 # nscale libs
 #target_link_libraries(HelloWorldRT segment featuresAll ${OpenCV_LIBS})
