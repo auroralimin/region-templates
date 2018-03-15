@@ -9,6 +9,10 @@
 #include <stdlib.h>
 #include <iostream>
 
+#include </usr/local/cuda-8.0/include/cuda_runtime_api.h>
+#include "opencv2/opencv.hpp"
+#include "opencv2/gpu/gpumat.hpp"
+
 #include "Tiler.h"
 #include "FileUtils.h"
 #include "TimeUtils.h"
@@ -116,13 +120,18 @@ RegionTemplateCollection* RTFromFiles(std::string inputFolderPath,
     }
 
     tu.markTimeUS("t2");
-    tu.markDiffUS("t2", "t1", "RFFromFiles"); 
-    tu.printDiffs();
+    tu.markDiffUS("t2", "t1", "set"); 
+    tu.printDiff("set");
     tu.outCsv("profiling.csv");
     return rtCollection;
 }
 
 int main (int argc, char **argv){
+    cudaSetDevice(0);
+    cudaFree(0);
+    cv::gpu::GpuMat test;
+    test.create(1, 1, CV_8U);
+    test.release();
     TimeUtils tu("begin");
 
     // Folder when input data images are stored
@@ -142,8 +151,8 @@ int main (int argc, char **argv){
     rtCollection = RTFromFiles(inputFolderPath, pGpu, pCpu, oTiles);
 
     tu.markTimeUS("init");
-    tu.markDiffUS("init", "begin", "Initialization");
-    tu.printDiff("Initialization");
+    tu.markDiffUS("init", "begin", "init");
+    tu.printDiff("init");
 
     // Instantiate application dependency graph
     for(int i = 0; i < rtCollection->getNumRTs(); i++){
@@ -167,8 +176,10 @@ int main (int argc, char **argv){
     delete rtCollection;
 
     tu.markTimeUS("end");
-    tu.markDiffUS("end", "begin", "Total"); 
-    tu.printDiff("Total");
+    tu.markDiffUS("end", "init", "processing"); 
+    tu.printDiff("processing");
+    tu.markDiffUS("end", "begin", "total"); 
+    tu.printDiff("total");
     tu.outCsv("profiling.csv");
     return 0;
 }

@@ -23,7 +23,7 @@ Segmentation::~Segmentation() {
 
 int Segmentation::run()
 {
-    TimeUtils tu("t1");
+    TimeUtils tu("seg1");
 
     std::cout << "Executing component: " << this->getComponentName() << " instance id: " << this->getId() <<std::endl;
 	RegionTemplate * inputRt = this->getRegionTemplateInstance("tile");
@@ -86,11 +86,9 @@ mask->setOutputType(DataSourceType::DATA_SPACES);
 	this->executeTask(tB);
 	this->executeTask(tC);*/
 
-    tu.markTimeUS("t2");
-    std::ostringstream oss;
-    oss << this->getComponentName() << " " << this->getId();
-    tu.markDiffUS("t2", "t1", oss.str()); 
-    tu.printDiffs();
+    tu.markTimeUS("seg2");
+    tu.markDiffUS("seg2", "seg1", "seg"); 
+    tu.printDiff("seg");
     tu.outCsv("profiling.csv");
 }
 

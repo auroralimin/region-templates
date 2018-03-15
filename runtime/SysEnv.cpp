@@ -57,7 +57,7 @@ void SysEnv::setManager(Manager *manager)
 }
 void SysEnv::parseInputArguments(int argc, char**argv){
 	// Init parameters to create Worker to default values
-	cpus = 1;
+	cpus = 0;
 	gpus = 0;
 	windowSize=-1;
 	// FCFS
@@ -85,7 +85,7 @@ void SysEnv::parseInputArguments(int argc, char**argv){
 			{
 			case 'c':
 				cpus = atoi(argv[i+1]);
-				std::cout << "cpu option"<<std::endl;
+				std::cout << "cpu option: " << argv[i+1] << std::endl;
 				break;
 
 			case 'd':
@@ -98,6 +98,7 @@ void SysEnv::parseInputArguments(int argc, char**argv){
 
 			case 'g':
 				gpus = atoi(argv[i+1]);
+				std::cout << "gpu option: " << argv[i+1] << std::endl;
 				break;
 
 			case 'w':

@@ -1,4 +1,5 @@
 #include "TaskSegmentation.h"
+#include "TimeUtils.h"
 
 TaskSegmentation::TaskSegmentation(DenseDataRegion2D* bgr, DenseDataRegion2D* mask) {
 	this->bgr = bgr;
@@ -9,6 +10,7 @@ TaskSegmentation::~TaskSegmentation() {
 }
 
 bool TaskSegmentation::run(int procType, int tid) {
+    TimeUtils tu("tseg1");
 	cv::Mat inputImage = this->bgr->getData();
 	cv::Mat outMask;
 
@@ -27,5 +29,8 @@ bool TaskSegmentation::run(int procType, int tid) {
 
 	uint64_t t2 = Util::ClockGetTimeProfile();
 
-	std::cout << "Task Segmentation time elapsed: "<< t2-t1  << " bgr->id:" << this->bgr->getId() << std::endl;
+    tu.markTimeUS("tseg2");
+    tu.markDiffUS("tseg2", "tseg1", "tseg"); 
+    tu.printDiff("tseg");
+    tu.outCsv("profiling.csv");
 }

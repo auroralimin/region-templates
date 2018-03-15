@@ -1,4 +1,5 @@
 #include "TaskFeatures.h"
+#include "TimeUtils.h"
 
 TaskFeatures::TaskFeatures(DenseDataRegion2D* bgr, DenseDataRegion2D* mask) {
 	this->bgr = bgr;
@@ -9,6 +10,7 @@ TaskFeatures::~TaskFeatures() {
 }
 
 bool TaskFeatures::run(int procType, int tid) {
+    TimeUtils tu("tfeat1");
 	int *bbox = NULL;
 	int compcount;
 	uint64_t t1 = Util::ClockGetTimeProfile();
@@ -24,5 +26,8 @@ bool TaskFeatures::run(int procType, int tid) {
 
 	uint64_t t2 = Util::ClockGetTimeProfile();
 
-	std::cout << "Task Feature Computation time elapsed: "<< t2-t1 << std::endl;
+    tu.markTimeUS("tfeat2");
+    tu.markDiffUS("tfeat2", "tfeat1", "tfeat"); 
+    tu.printDiff("tfeat");
+    tu.outCsv("profiling.csv");
 }

@@ -21,7 +21,7 @@ FeatureExtraction::~FeatureExtraction() {
 
 int FeatureExtraction::run()
 {
-    TimeUtils tu("t1");
+    TimeUtils tu("fe1");
 
 	RegionTemplate * inputRt = this->getRegionTemplateInstance("tile");
 
@@ -41,11 +41,9 @@ int FeatureExtraction::run()
 		std::cout << "\tDid not find RT named tile"<< std::endl;
 	}
 
-    tu.markTimeUS("t2");
-    std::ostringstream oss;
-    oss << this->getComponentName() << " " << this->getId();
-    tu.markDiffUS("t2", "t1", oss.str()); 
-    tu.printDiffs();
+    tu.markTimeUS("fe2");
+    tu.markDiffUS("fe2", "fe1", "fe"); 
+    tu.printDiff("fe");
     tu.outCsv("profiling.csv");
 
 	return 0;

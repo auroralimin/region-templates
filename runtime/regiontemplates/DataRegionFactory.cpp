@@ -9,6 +9,7 @@
 
 #include "DataRegionFactory.h"
 #include "utilitiesSvs.h"
+#include "TimeUtils.h"
 
 std::string number2String(int x){
 	std::ostringstream ss;
@@ -236,6 +237,7 @@ cv::Mat DataRegionFactory::loadDefault(DenseDataRegion2D *dr2D, std::string path
 }
 
 cv::Mat DataRegionFactory::loadSvs(DenseDataRegion2D *dr2D) {
+    TimeUtils tu("svs1");
     /* TODO: solve bug that changes dataRegion when trying to access isAppInput
        if(!dr2D->getIsAppInput()){
        std::cout << "Failed to read Data region. Svs images must be for input only." << std::endl;
@@ -271,6 +273,11 @@ cv::Mat DataRegionFactory::loadSvs(DenseDataRegion2D *dr2D) {
     //cv::imwrite(name.c_str(), chunkData);
     dr2D->setData(chunkData);
     openslide_close(osr);
+
+    tu.markTimeUS("svs2");
+    tu.markDiffUS("svs2", "svs1", "load"); 
+    tu.printDiffs();
+    tu.outCsv("profiling.csv");
 
     return chunkData;
 }
