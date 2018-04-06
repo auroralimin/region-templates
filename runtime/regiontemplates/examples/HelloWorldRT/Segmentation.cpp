@@ -44,8 +44,8 @@ int Segmentation::run()
 			mask->setName("mask");
 			mask->setId(outputId);
 
-mask->setInputType(DataSourceType::DATA_SPACES);
-mask->setOutputType(DataSourceType::DATA_SPACES);
+            mask->setInputType(DataSourceType::DATA_SPACES);
+            mask->setOutputType(DataSourceType::DATA_SPACES);
 
 			inputRt->insertDataRegion(mask);
 			std::cout <<  "nDataRegions: after:" << inputRt->getNumDataRegions() << std::endl;

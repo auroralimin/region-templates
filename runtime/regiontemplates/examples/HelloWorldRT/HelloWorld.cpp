@@ -22,7 +22,6 @@
 
 #include "SysEnv.h"
 #include "Segmentation.h"
-#include "FeatureExtraction.h"
 
 #define NUM_PIPELINE_INSTANCES	1
 
@@ -127,11 +126,16 @@ RegionTemplateCollection* RTFromFiles(std::string inputFolderPath,
 }
 
 int main (int argc, char **argv){
-    cudaSetDevice(0);
-    cudaFree(0);
-    cv::gpu::GpuMat test;
-    test.create(1, 1, CV_8U);
-    test.release();
+	for(int i = 0; i < argc-1; i++){
+		if(argv[i][0] == '-' && argv[i][1] == 'g' && atoi(argv[1+(i++)]) > 0){
+            cudaSetDevice(0);
+            cudaFree(0);
+            cv::gpu::GpuMat test;
+            test.create(1, 1, CV_8U);
+            test.release();
+        }
+    }
+    
     TimeUtils tu("begin");
 
     // Folder when input data images are stored
@@ -158,13 +162,7 @@ int main (int argc, char **argv){
     for(int i = 0; i < rtCollection->getNumRTs(); i++){
         Segmentation *seg = new Segmentation();
         seg->addRegionTemplateInstance(rtCollection->getRT(i), rtCollection->getRT(i)->getName());
-        FeatureExtraction *fe =  new FeatureExtraction();
-
-        fe->addRegionTemplateInstance(rtCollection->getRT(i), rtCollection->getRT(i)->getName());
-        fe->addDependency(seg->getId());
-
         sysEnv.executeComponent(seg);
-        sysEnv.executeComponent(fe);
     }
 
     // End Create Dependency Graph

@@ -398,11 +398,12 @@ bool DataRegionFactory::writeDDR2DFS(DataRegion* dataRegion, std::string path, b
                                                               outputFile = createOutputFileName(dr2D, path, ".tiff");
                                                           }
 #ifdef DEBUG
-                                                          std::cout << "rows: "<< dr2D->getData().rows << " cols: "<< dr2D->getData().cols <<std::endl;
                                                           //std::cout << "rows: "<< dataRegion->getData().rows << " cols: "<< dataRegion->getData().cols <<std::endl;
 #endif
                                                           // check if there is any data to be written
+                                                          std::cout << "Seria aqui que as mascaras sao criadas?\n";
                                                           if(dr2D->getData().rows > 0 && dr2D->getData().cols > 0){
+                                                              std::cout << "SIM!\n";
                                                               retVal = cv::imwrite(outputFile, dr2D->getData());
                                                           }
 
