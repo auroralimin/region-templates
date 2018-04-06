@@ -26,6 +26,7 @@ private:
 
     // System parameters
     int cpus, gpus, policy, windowSize;
+    int nqueue;
     bool dataLocalityAware;
     bool prefetching;
     bool cacheOnRead;
@@ -37,8 +38,8 @@ public:
 
 	void parseInputArguments(int argc, char**argv);
 
-	int startupSystem(int argc, char **argv, std::string componentsLibName);
-	int executeComponent(PipelineComponentBase *compInstance);
+	int startupSystem(int argc, char **argv, std::string componentsLibName, bool singleQueue = true);
+	int executeComponent(PipelineComponentBase *compInstance, int n = 0);
 
 	int startupExecution();
     	int finalizeSystem();
@@ -52,6 +53,9 @@ public:
 	bool eraseResultData(int id){
 		return manager->eraseResultData(id);
 	}
+    int getNqueue(){
+        return nqueue;
+    }
 };
 
 #endif /* SYSENV_H_ */

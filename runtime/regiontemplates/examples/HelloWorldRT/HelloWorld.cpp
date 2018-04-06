@@ -147,9 +147,11 @@ int main (int argc, char **argv){
     parseInputArguments(argc, argv, inputFolderPath, &pGpu, &pCpu, oTiles);
     // Handler to the distributed execution system environment
     SysEnv sysEnv;
-
-    // Tell the system which libraries should be used
-    sysEnv.startupSystem(argc, argv, "libcomponentsrt.so");
+    
+    // Tell the system which libraries should be used and if manager will
+    // have a single queue or not
+    sysEnv.startupSystem(argc, argv, "libcomponentsrt.so", true);
+    int nqueue = sysEnv.getNqueue();
 
     // Create region templates description without instantiating data
     rtCollection = RTFromFiles(inputFolderPath, pGpu, pCpu, oTiles);
@@ -162,7 +164,7 @@ int main (int argc, char **argv){
     for(int i = 0; i < rtCollection->getNumRTs(); i++){
         Segmentation *seg = new Segmentation();
         seg->addRegionTemplateInstance(rtCollection->getRT(i), rtCollection->getRT(i)->getName());
-        sysEnv.executeComponent(seg);
+        sysEnv.executeComponent(seg, i%nqueue);
     }
 
     // End Create Dependency Graph

@@ -131,7 +131,7 @@ void SysEnv::parseInputArguments(int argc, char**argv){
 	}
 
 }
-int SysEnv::startupSystem(int argc, char **argv, std::string componentsLibName){
+int SysEnv::startupSystem(int argc, char **argv, std::string componentsLibName, bool singleQueue){
 	// set up mpi
 	int rank, size, worker_size, manager_rank;
 	std::string hostname;
@@ -165,6 +165,7 @@ int SysEnv::startupSystem(int argc, char **argv, std::string componentsLibName){
 	worker_size = size - 1;
 	manager_rank = size - 1;
 
+    this->nqueue = (singleQueue) ? 1 : worker_size;
 
 	uint64_t t1 = 0, t2 = 0;
 	t1 = Util::ClockGetTime();
@@ -172,7 +173,7 @@ int SysEnv::startupSystem(int argc, char **argv, std::string componentsLibName){
 	// decide based on rank of worker which way to process
 	if (rank == manager_rank) {
 		// Create the manager process information
-		this->setManager(new Manager(comm_world, manager_rank, worker_size, componentDataAwareSchedule));
+		this->setManager(new Manager(comm_world, manager_rank, worker_size, componentDataAwareSchedule, nqueue));
 
 		// Check whether all Worker have successfully initialized their execution
 		this->getManager()->checkConfiguration();
@@ -225,10 +226,13 @@ int SysEnv::finalizeSystem()
 	return this->getManager()->finalizeExecution();
 }
 
-int SysEnv::executeComponent(PipelineComponentBase* compInstance) {
-	this->getManager()->insertComponentInstance(compInstance);
+int SysEnv::executeComponent(PipelineComponentBase* compInstance, int n) {
+    if (n >= nqueue) {
+        std::cout << "WARNING: trying to alocate components to a queue that "
+                  << "does not exist!" << std::endl;
+        n = 0;
+    }
+	this->getManager()->insertComponentInstance(compInstance, n);
 	return 0;
 }
-
-
 

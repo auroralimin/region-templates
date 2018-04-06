@@ -7,10 +7,11 @@
 
 #include "Manager.h"
 
-Manager::Manager(const MPI::Intracomm& comm_world, const int manager_rank, const int worker_size, const bool componentDataAwareSchedule, const int queueType) {
+Manager::Manager(const MPI::Intracomm& comm_world, const int manager_rank, const int worker_size, const bool componentDataAwareSchedule, const int nqueue, const int queueType) {
 	this->comm_world =comm_world;
 	this->manager_rank = manager_rank;
 	this->worker_size = worker_size;
+    this->nqueue = nqueue;
 	setFirstExecutionRound(true);
 	this->componentDataAwareSchedule = componentDataAwareSchedule;
 	for(int i = 0; i < worker_size; i++){
@@ -18,21 +19,27 @@ Manager::Manager(const MPI::Intracomm& comm_world, const int manager_rank, const
 		this->compToSchedDataAwareSchedule.push_back(aux);
 	}
 	std::cout << "compToSchedSize: " << this->compToSchedDataAwareSchedule.size() << std::endl;
-
-	if(queueType ==ExecEngineConstants::FCFS_QUEUE){
-		componentsToExecute = new TasksQueueFCFS(1, 0);
-	}else{
-		componentsToExecute = new TasksQueuePriority(1, 0);
-	}
-	this->componentDependencies = new TrackDependencies();
+	std::cout << "nqueue: " << this->nqueue << std::endl;
+    componentsToExecute = (TasksQueue**) calloc (nqueue, sizeof(TasksQueue*));
+    for (int i = 0; i < nqueue; i++) {
+        if(queueType ==ExecEngineConstants::FCFS_QUEUE){
+            componentsToExecute[i] = new TasksQueueFCFS(1, 0);
+        }else{
+            componentsToExecute[i] = new TasksQueuePriority(1, 0);
+        }
+    }
+    this->componentDependencies = new TrackDependencies();
 
 }
 
 Manager::~Manager() {
-	if(componentsToExecute != NULL){
-		delete componentsToExecute;
-	}
-	delete this->componentDependencies;
+    for (int i = 0; i < nqueue; i++) {
+        if(componentsToExecute[i] != NULL){
+            delete componentsToExecute[i];
+        }
+    }
+    free(componentsToExecute);
+    delete this->componentDependencies;
 }
 
 MPI::Intracomm Manager::getCommWorld() const
@@ -52,79 +59,78 @@ int Manager::getWorkerSize() const
 
 int Manager::finalizeExecution()
 {
-	MPI::Status status;
-	int worker_id;
-	char ready;
+    MPI::Status status;
+    int worker_id;
+    char ready;
 
+    /* tell everyone to quit */
+    int active_workers = worker_size;
+    std::cout << "finalizeExecution. worker_size: "<< worker_size << std::endl;
+    std::vector<bool> finished;
+    for(int i = 0; i < worker_size; i++)
+        finished.push_back(false);
 
-	/* tell everyone to quit */
-	int active_workers = worker_size;
-	std::cout << "finalizeExecution. worker_size: "<< worker_size << std::endl;
-	std::vector<bool> finished;
-	for(int i = 0; i < worker_size; i++)
-		finished.push_back(false);
-	
-	while (active_workers > 0) {
-		usleep(1000);
+    while (active_workers > 0) {
+        usleep(1000);
 
-		if (comm_world.Iprobe(MPI_ANY_SOURCE, MessageTag::TAG_CONTROL, status)) {
+        if (comm_world.Iprobe(MPI_ANY_SOURCE, MessageTag::TAG_CONTROL, status)) {
 
-			// where is it coming from
-			worker_id=status.Get_source();
-			comm_world.Recv(&ready, 1, MPI::CHAR, worker_id, MessageTag::TAG_CONTROL);
+            // where is it coming from
+            worker_id=status.Get_source();
+            comm_world.Recv(&ready, 1, MPI::CHAR, worker_id, MessageTag::TAG_CONTROL);
 
-			if (worker_id == manager_rank) continue;
+            if (worker_id == manager_rank) continue;
 
-			if(ready == MessageTag::WORKER_READY) {
-				if(finished[worker_id] == false){
-					comm_world.Send(&MessageTag::MANAGER_FINISHED, 1, MPI::CHAR, worker_id, MessageTag::TAG_CONTROL);
-					printf("manager signal finished worker: %d manager_rank: %d\n", worker_id, manager_rank);
-					--active_workers;
-					finished[worker_id] = true;
-				}
-			}
-		}
-	}
-	this->getCommWorld().Barrier();
-	MPI::Finalize();
-	return 0;
+            if(ready == MessageTag::WORKER_READY) {
+                if(finished[worker_id] == false){
+                    comm_world.Send(&MessageTag::MANAGER_FINISHED, 1, MPI::CHAR, worker_id, MessageTag::TAG_CONTROL);
+                    printf("manager signal finished worker: %d manager_rank: %d\n", worker_id, manager_rank);
+                    --active_workers;
+                    finished[worker_id] = true;
+                }
+            }
+        }
+    }
+    this->getCommWorld().Barrier();
+    MPI::Finalize();
+    return 0;
 }
 
 void Manager::checkConfiguration()
 {
 
-	MPI::Status status;
-	int worker_id;
-	char ready;
-	bool correctInitialization = true;
+    MPI::Status status;
+    int worker_id;
+    char ready;
+    bool correctInitialization = true;
 
-	int active_workers = worker_size;
+    int active_workers = worker_size;
 
-	// Listening from each worker whether it was initialized correctly
-	while (active_workers > 0) {
-		usleep(1000);
+    // Listening from each worker whether it was initialized correctly
+    while (active_workers > 0) {
+        usleep(1000);
 
-		if (comm_world.Iprobe(MPI_ANY_SOURCE, MessageTag::TAG_CONTROL, status)) {
+        if (comm_world.Iprobe(MPI_ANY_SOURCE, MessageTag::TAG_CONTROL, status)) {
 
-			// where is it coming from
-			worker_id=status.Get_source();
-			bool curWorkerStatus;
-			comm_world.Recv(&curWorkerStatus, 1, MPI::BOOL, worker_id, MessageTag::TAG_CONTROL);
-			if(curWorkerStatus == false){
-				correctInitialization = false;
-			}
-			active_workers--;
-		}
-	}
+            // where is it coming from
+            worker_id=status.Get_source();
+            bool curWorkerStatus;
+            comm_world.Recv(&curWorkerStatus, 1, MPI::BOOL, worker_id, MessageTag::TAG_CONTROL);
+            if(curWorkerStatus == false){
+                correctInitialization = false;
+            }
+            active_workers--;
+        }
+    }
 
-	// Tell each worker whether to continue or quit the execution
-	comm_world.Bcast(&correctInitialization, 1 , MPI::BOOL, this->getManagerRank());
+    // Tell each worker whether to continue or quit the execution
+    comm_world.Bcast(&correctInitialization, 1 , MPI::BOOL, this->getManagerRank());
 
-	if(correctInitialization==false){
-		std::cout << "Quitting. Workers initialization failed. Possible due to errors loading the components library."<<std::endl;
-		MPI::Finalize();
-		exit(1);
-	}
+    if(correctInitialization==false){
+        std::cout << "Quitting. Workers initialization failed. Possible due to errors loading the components library."<<std::endl;
+        MPI::Finalize();
+        exit(1);
+    }
 }
 
 
@@ -204,6 +210,15 @@ void Manager::setWorkerSize(int worker_size)
     this->worker_size = worker_size;
 }
 
+bool Manager::queuesEmpty() {
+    for (int i = 0; i < nqueue; i++) {
+        if (componentsToExecute[i]->getSize() > 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void Manager::manager_process()
 {
 
@@ -224,12 +239,15 @@ void Manager::manager_process()
 	int inputlen = 15;
 
 	//TODO: testing only
-	int tasksToFinishTasks = componentsToExecute->getSize();
+	int tasksToFinishTasks = 0;
+    for (int i = 0; i < nqueue; i++) {
+        tasksToFinishTasks += componentsToExecute[i]->getSize();
+    }
 	std::cout << __FILE__ << ":" << __LINE__ << ". TasksToExecute="<<tasksToFinishTasks<<std::endl;
 
+    int iq = 0;
 	// Process all components instantiated for execution
-	while (componentsToExecute->getSize() != 0 || this->componentDependencies->getCountTasksPending() != 0 || this->getActiveComponentsSize()) {
-
+	while (!queuesEmpty() || this->componentDependencies->getCountTasksPending() != 0 || this->getActiveComponentsSize()) {
 		if (comm_world.Iprobe(MPI_ANY_SOURCE, MessageTag::TAG_CONTROL, status)) {
 
 			// Where is the message coming from
@@ -246,11 +264,12 @@ void Manager::manager_process()
 			comm_world.Recv(msg, input_message_size, MPI::CHAR, worker_id, MessageTag::TAG_CONTROL);
 			//			printf("manager received request from worker %d\n",worker_id);
 			msg_type = msg[0];
-
+            int iq = (worker_id < nqueue) ? worker_id : 0;
 			switch(msg_type){
 				case MessageTag::WORKER_READY:
 				{
-					if(this->componentsToExecute->getSize() > 0){
+                    std::cout << "AQUI4 (size = " << this->componentsToExecute[iq]->getSize() << ")\n";
+					if(this->componentsToExecute[iq]->getSize() > 0){
 						PipelineComponentBase *compToExecute = NULL;
 
 						// try to get a component pipeline that reuses data
@@ -260,7 +279,7 @@ void Manager::manager_process()
 								// get and erase first element from prescheduled list.
 								int id = compToSchedDataAwareSchedule[worker_id].front();
 								compToSchedDataAwareSchedule[worker_id].erase(compToSchedDataAwareSchedule[worker_id].begin());
-								compToExecute = (PipelineComponentBase*)componentsToExecute->getByTaskId(id);
+								compToExecute = (PipelineComponentBase*)componentsToExecute[iq]->getByTaskId(id);
 								if(compToExecute != NULL){
 									break;
 								}
@@ -269,12 +288,12 @@ void Manager::manager_process()
 						// if data reuse is not enabled or did not find a component to reuse data, try to get any.
 						if(compToExecute == NULL){
 							// select next component instantiation should be dispatched for execution
-							compToExecute = (PipelineComponentBase*)componentsToExecute->getTask();
+							compToExecute = (PipelineComponentBase*)componentsToExecute[iq]->getTask();
 						}
 						// tell worker that manager is ready
 						comm_world.Send(&MessageTag::MANAGER_READY, 1, MPI::CHAR, worker_id, MessageTag::TAG_CONTROL);
 
-						std::cout << "Manager: before sending, size: "<< this->componentsToExecute->getSize() << std::endl;
+						std::cout << "Manager: before sending, size: "<< this->componentsToExecute[iq]->getSize() << std::endl;
 						this->sendComponentInfoToWorker(worker_id, compToExecute);
 
 						this->insertActiveComponent(compToExecute);
@@ -420,7 +439,7 @@ void Manager::manager_process()
 								std::cout << std::endl;
 #endif
 							}
-							this->resolveDependencies(compPtrAux);
+							this->resolveDependencies(compPtrAux, iq);
 
 							delete compPtrAux;
 						}else{
@@ -461,13 +480,13 @@ void Manager::insertComponentResultData(int id, char* data) {
 	this->componentsResultData.insert(std::pair<int, char*>(id, data));
 }
 
-int Manager::insertComponentInstance(PipelineComponentBase* compInstance) {
+int Manager::insertComponentInstance(PipelineComponentBase* compInstance, int n) {
 
 //	compInstance->curExecEngine = NULL;
 //	compInstance->managerContext = this;
 
 	// Resolve component dependencies and queue it for execution, or left the component pending waiting
-	this->componentDependencies->checkDependencies(compInstance, this->componentsToExecute);
+	this->componentDependencies->checkDependencies(compInstance, this->componentsToExecute[n]);
 
 	return 0;
 }
@@ -505,8 +524,8 @@ int Manager::getActiveComponentsSize() {
 	return this->activeComponents.size();
 }
 
-int Manager::resolveDependencies(PipelineComponentBase* pc) {
-	this->componentDependencies->resolveDependencies(pc, this->componentsToExecute);
+int Manager::resolveDependencies(PipelineComponentBase* pc, int n) {
+	this->componentDependencies->resolveDependencies(pc, this->componentsToExecute[n]);
 	return 0;
 }
 

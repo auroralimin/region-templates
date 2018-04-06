@@ -30,6 +30,9 @@ private:
 	// Number of Worker processes
 	int worker_size;
 
+    //Numbem of TaskQueues
+    int nqueue;
+
 	// Ranking of this manager within the communication group
 	int manager_rank;
 
@@ -41,7 +44,7 @@ private:
 	std::vector<std::vector<int> >compToSchedDataAwareSchedule;
 
 	// Components with dependencies solved, meaning ready to execute
-	TasksQueue* componentsToExecute;
+	TasksQueue** componentsToExecute;
 
 	// Mechanism that tracks dependencies among component instances
 	TrackDependencies* componentDependencies;
@@ -71,7 +74,7 @@ private:
 
 	void sendDRInfoToWorkerForGlobalStorage(int worker_id, std::string rtName, std::string rtId, DataRegion *dr);
 
-	int resolveDependencies(PipelineComponentBase *pc);
+	int resolveDependencies(PipelineComponentBase *pc, int n = 0);
 	std::list<Task *> getDependentTasks(PipelineComponentBase *pc);
 
 	bool isFirstExecutionRound() const;
@@ -81,7 +84,7 @@ private:
 	friend class PipelineComponentBase;
 
 public:
-	Manager(const MPI::Intracomm& comm_world, const int manager_rank, const int worker_size, const bool componentDataAwareSchedule=false, const int queueType=ExecEngineConstants::FCFS_QUEUE);
+	Manager(const MPI::Intracomm& comm_world, const int manager_rank, const int worker_size, const bool componentDataAwareSchedule=false, const int nqueue = 1, const int queueType=ExecEngineConstants::FCFS_QUEUE);
 	virtual ~Manager();
 
 	void manager_process();
@@ -93,9 +96,10 @@ public:
     int getWorkerSize() const;
     void setWorkerSize(int worker_size);
 
-    int insertComponentInstance(PipelineComponentBase * compInstance);
+    int insertComponentInstance(PipelineComponentBase* compInstance, int n = 0);
     char *getComponentResultData(int id);
     bool eraseResultData(int id);
+    bool queuesEmpty();
 
 };
 
