@@ -6,6 +6,9 @@
  */
 
 #include "Worker.h"
+#include "TimeUtils.h"
+
+#include <string>
 
 /*Worker::Worker(const MPI::Intracomm& comm_world, const int manager_rank, const int rank, const int max_active_components, const int CPUCores, const int GPUs, const int schedType, const bool dataLocalityAware, const bool prefetching) {
 	this->manager_rank = manager_rank;
@@ -242,6 +245,7 @@ int Worker::getRank() const
 
 void Worker::workerProcess()
 {
+    TimeUtils tu("init");
 	// Init data spaces
 	// Number of DataSpaces clients equals to number of workers
 	// Load Components implemented by the current application, and
@@ -267,6 +271,7 @@ void Worker::workerProcess()
 
 	// Flag that control the execution loop, and is updated from messages sent by the Manager
 	char flag = MessageTag::MANAGER_READY;
+    int n = 0;
 	while (flag != MessageTag::MANAGER_FINISHED && flag != MessageTag::MANAGER_ERROR) {
 
 		// tell the manager - ready
@@ -276,17 +281,17 @@ void Worker::workerProcess()
 		this->comm_world.Recv(&flag, 1, MPI::CHAR, this->getManagerRank(), MessageTag::TAG_CONTROL);
 
 	//	std::cout << "Worker: "<< this->getRank()<<" flag: " <<(int)flag<<std::endl;
-	
 		switch(flag){
 			case MessageTag::MANAGER_READY:
 			{
-
 				PipelineComponentBase *pc = this->receiveComponentInfoFromManager();
 #ifdef DEBUG
 				std::cout << "maxActive: " << this->getMaxActiveComponentInstances() << " activeComps: "<< this->getActiveComponentInstances() <<" #resTasks:"<< std::endl;
 #endif
 
 				if(pc != NULL){
+                    std::cout << "NAME! " << pc->getComponentName() << std::endl;
+                    tu.markTimeUS("c_init");
 					// One more component instance was received and is being dispatched for execution
 					this->incrementActiveComponentInstances();
 
@@ -325,6 +330,10 @@ void Worker::workerProcess()
 					this->getResourceManager()->insertTask(callBackTask);
 
 
+                    tu.markTimeUS("c_end");
+                    std::ostringstream ss1;
+                    ss1 << "\"" << pc->getSubname() << "_" << rank << "\"";
+                    tu.markDiffUS("c_init", "c_end", ss1.str());
 				}else{
 					std::cout << "Error: Failed to load PipelineComponent!"<<std::endl;
 				}
@@ -375,6 +384,12 @@ void Worker::workerProcess()
 	// Notify Manager about components finished: Those which were in the queue for
 	// execution, and were computed during the endExecution call to above
 	this->notifyComponentsCompleted();
+
+    tu.markTimeUS("end");
+    std::ostringstream ss2;
+    ss2 << "worker" << rank;
+    tu.markDiffUS("init", "end", ss2.str());
+    tu.outCsv("seg_time.csv");
 	//std::cout<< "ComputedComponents = "<< this->getComputedComponentSize() <<std::endl;
 #ifdef	WITH_DATA_SPACES
 	// finalize connection with data spaces

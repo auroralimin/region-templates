@@ -15,6 +15,7 @@ Segmentation::Segmentation() {
 	this->setComponentName("Segmentation");
 	this->addInputOutputDataRegion("tile", "BGR", RTPipelineComponentBase::INPUT_OUTPUT);
 	this->addInputOutputDataRegion("tile", "mask", RTPipelineComponentBase::OUTPUT);
+    setSubname("Segmentation");
 }
 
 Segmentation::~Segmentation() {
@@ -31,6 +32,7 @@ int Segmentation::run()
 	if(inputRt != NULL){
 		DenseDataRegion2D *bgr = dynamic_cast<DenseDataRegion2D*>(inputRt->getDataRegion("BGR"));
 		if(bgr != NULL){
+            setSubname(bgr->getId());
 			std::cout << "Data Region is not null"<< std::endl;
 
 			std::cout <<  "nDataRegions: " << inputRt->getNumDataRegions() << std::endl;

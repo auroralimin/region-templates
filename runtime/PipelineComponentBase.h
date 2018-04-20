@@ -61,8 +61,8 @@ private:
 	friend class Worker;
 	friend class Manager;
 
-	// merely here for user needs. not used by the system 
 	std::string name;
+	std::string subname;
 
 	// holds the ids of the arguments before the component is
 	// ready to be executed. used only by FGO at this time
@@ -146,7 +146,9 @@ public:
 	void setResultData(char* data, int dataSize);
 
 	std::string getName() {return name;};
+    std::string getSubname() {return subname;};
 	void setName(std::string name) {this->name = name;};
+	void setSubname(std::string subname) {this->subname = subname;};
 
 	void addInput(int i) {input_arguments.push_back(i);};
 	void addOutput(int i) {output_arguments.push_back(i);};

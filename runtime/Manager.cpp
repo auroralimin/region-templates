@@ -268,7 +268,6 @@ void Manager::manager_process()
 			switch(msg_type){
 				case MessageTag::WORKER_READY:
 				{
-                    std::cout << "AQUI4 (size = " << this->componentsToExecute[iq]->getSize() << ")\n";
 					if(this->componentsToExecute[iq]->getSize() > 0){
 						PipelineComponentBase *compToExecute = NULL;
 
@@ -331,7 +330,7 @@ void Manager::manager_process()
 
 					// components with extra data
 					int number_components_extra_data = ((int*) (msg+extracted_size_bytes))[0]; //tasks_data[number_components_completed+1];
-#ifdef DEBUG	
+#ifdef DEBUG
 					std::cout << "Manager: #componets w/ extra data: "<< number_components_extra_data << " extracted bytes: "<< extracted_size_bytes<<std::endl;
 #endif
 					extracted_size_bytes += sizeof(int);

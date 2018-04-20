@@ -1,6 +1,7 @@
 #include "DataRegion.h"
 
 DataRegion::DataRegion() {
+    this->ratio = 0.0f;
 	this->version = 0;
 	this->timestamp = 0;
 	this->resolution = 0;
@@ -90,6 +91,11 @@ bool DataRegion::instantiateRegion() {
 
 int DataRegion::serialize(char* buff) {
 	int serialized_bytes = 0;
+
+	// Backgroun ratio
+	float background = this->getRatio();
+	memcpy(buff+serialized_bytes, &background, sizeof(float));
+	serialized_bytes += sizeof(float);
 
 	// Data region data
 	int type = this->getType();
@@ -201,6 +207,11 @@ int DataRegion::serialize(char* buff) {
 
 int DataRegion::deserialize(char* buff) {
 	int deserialized_bytes = 0;
+
+	// extract background ratio
+	float background =((float*)(buff+deserialized_bytes))[0];
+	deserialized_bytes += sizeof(float);
+	this->setRatio(background);
 
 	// extract data region type
 	int region_type =((int*)(buff+deserialized_bytes))[0];
@@ -347,6 +358,9 @@ void DataRegion::setOutputType(int outputType) {
 int DataRegion::serializationSize() {
 	int size_bytes = 0;
 
+	// background ratio
+	size_bytes += sizeof(float);
+
 	// data region type
 	size_bytes += sizeof(int);
 
@@ -435,6 +449,14 @@ void DataRegion::setROI(const BoundingBox& roi) {
 	ROI = roi;
 }
 
+void DataRegion::setRatio(const float background) {
+	ratio = background;
+}
+
+float DataRegion::getRatio() {
+    return ratio;
+}
+
 void DataRegion::insertBB2IdElement(BoundingBox bb, std::string id) {
 	bb2Id.push_back(std::make_pair(bb, id));
 }
@@ -447,6 +469,7 @@ void DataRegion::print() {
 	std::cout << "\tTimestamp: "<< this->getTimestamp() << std::endl;
 	std::cout << "\tVersion: "<< this->getVersion() << std::endl;
 	std::cout << "\tDRType: "<< this->getType() << std::endl;
+	std::cout << "\tRatio: "<< this->getRatio() << std::endl;
 	std::cout << "\tisAppInput?:" << this->getIsAppInput() << std::endl;
 	std::cout << "\tInType: " << this->getInputType() << std::endl;
 	std::cout << "\tOutType: " << this->getOutputType() << std::endl;

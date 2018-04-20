@@ -23,7 +23,7 @@ class BasicDataSource;
 class DataRegion {
 private:
 	int elementsType; // Type of each data element within the region: CHAR, UCHAR, INT, UINT, etc.
-	int regionType;	   // Dense, sparse, (2D/3D)...
+	int regionType;   // Dense, sparse, (2D/3D)...
 	int version;      // User specified version for the region
 	int timestamp;    // Time stamp to which region is associated
 	std::string name; // name identifier
@@ -31,6 +31,7 @@ private:
 	BoundingBox bb;   // bounding box surrounding the region
 	std::string id;   // this id identifies a given instance of the data region and
 					  // is used to read/write the data region
+    float ratio;      // brackground ratio
 	int storageLevel; // if set, the data will be written directly to a certain storage level.
 					  // Otherwise, its written in higher level in which it fits.
 
@@ -124,6 +125,8 @@ public:
 	void setId(std::string id);
 	const BoundingBox& getROI() const;
 	void setROI(const BoundingBox& roi);
+    void setRatio(const float background);
+    float getRatio();
 
 	void print();
 	int getOutputExtension() const;
