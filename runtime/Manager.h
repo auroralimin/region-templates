@@ -67,6 +67,7 @@ private:
 
 	int getActiveComponentsSize();
 
+    int getBiggerQueueId();
 	// MPI structure defining the communication group information
 	MPI::Intracomm comm_world;
 

@@ -219,6 +219,15 @@ bool Manager::queuesEmpty() {
     return true;
 }
 
+int Manager::getBiggerQueueId() {
+    int index = 0;
+    for (int i = 0; i < nqueue; i++) {
+        if (componentsToExecute[i]->getSize() > componentsToExecute[index]->getSize())
+            index = i;
+    }
+    return index;
+}
+
 void Manager::manager_process()
 {
 
@@ -287,6 +296,7 @@ void Manager::manager_process()
 						// if data reuse is not enabled or did not find a component to reuse data, try to get any.
 						if(compToExecute == NULL){
 							// select next component instantiation should be dispatched for execution
+                            iq = componentsToExecute[iq]->getSize() > 0 ? iq : getBiggerQueueId();
 							compToExecute = (PipelineComponentBase*)componentsToExecute[iq]->getTask();
 						}
 						// tell worker that manager is ready
