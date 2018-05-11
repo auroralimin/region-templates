@@ -37,7 +37,7 @@ link_directories(${NSCALE_BUILD_DIR}/lib)
 set(libname componentsrt)
 
 # Source files used by the Runtime System
-set( libcomponentssrcs Segmentation.cpp FeatureExtraction.cpp TaskSegmentation.cpp TaskFeatures.cpp ../../tiler/Tiler.cpp )
+set( libcomponentssrcs Segmentation.cpp FeatureExtraction.cpp TaskSegmentation.cpp TaskFeatures.cpp QuadTree.cpp ../../tiler/Tiler.cpp )
 
 # Add rule to generate the Runtime System, as a shared library (.so)
 add_library("${libname}" SHARED ${libcomponentssrcs})

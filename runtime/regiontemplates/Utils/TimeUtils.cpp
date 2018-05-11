@@ -44,7 +44,7 @@ void TimeUtils::outCsv(std::string strOut) {
     
     std::map<std::string, long long>::iterator d;
     for (d = diffs.begin(); d != diffs.end(); d++) {
-        out << d->first << "," << d->second << std::endl;
+        out << "\"" << d->first << "\"" << "," << d->second << std::endl;
     }
 	out.close();
 }

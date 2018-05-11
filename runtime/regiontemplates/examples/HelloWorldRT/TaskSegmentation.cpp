@@ -16,6 +16,7 @@ TaskSegmentation::~TaskSegmentation() {
 
 bool TaskSegmentation::run(int procType, int tid) {
     TimeUtils tu("tseg1");
+    TimeUtils tu2("c_init");
 	cv::Mat inputImage = this->bgr->getData();
 	cv::Mat outMask;
     int compcount = 0, *bbox = NULL;
@@ -38,5 +39,10 @@ bool TaskSegmentation::run(int procType, int tid) {
     tu.markDiffUS("tseg2", "tseg1", "tseg"); 
     tu.printDiff("tseg");
     tu.outCsv("profiling.csv");
+    tu2.markTimeUS("c_end");
+    std::ostringstream ss1;
+    ss1 << "" << bgr->getId();
+    tu2.markDiffUS("c_init", "c_end", ss1.str());
+    tu2.outCsv("seg_time.csv");
 }
 

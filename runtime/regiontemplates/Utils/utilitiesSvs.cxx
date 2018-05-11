@@ -21,10 +21,6 @@
 /// function that has ANYTHING to do with SVS will be put here.
 ////////////////////////////////////////////////////////////////////////////////
 
-
-// openslide
-#include "openslide.h"
-
 // openCV
 #include <opencv2/opencv.hpp>
 
@@ -87,8 +83,29 @@ namespace gth818n
             }
         }
     }
+  }
 
-    return;
+  void getLevelSize(int level, openslide_t *osr, int64_t& SizeW, int64_t& SizeH)
+  {
+    int32_t numberOfLevels = openslide_get_level_count(osr);
+   std::cout << "Svs Totally " << numberOfLevels << " levels." << std::endl;
+    if (numberOfLevels < 0)
+    {
+        std::cerr << "Could not obtain svs image number of levels" << std::cout;
+        exit(1);
+    }
+    else if (level >= numberOfLevels)
+    {
+        std::cout << "Svs level does not exist" << std::endl;
+        return;
+    }
+    int64_t w[1];
+    int64_t h[1];
+
+    openslide_get_level_dimensions(osr, level, w, h);
+
+    SizeW = w[0];
+    SizeH = h[0];
   }
 
   void osrRegionToCVMat(const uint32_t* osrRegion, cv::Mat thisTile)

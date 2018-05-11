@@ -7,7 +7,7 @@
 
 #include "Manager.h"
 
-Manager::Manager(const MPI::Intracomm& comm_world, const int manager_rank, const int worker_size, const bool componentDataAwareSchedule, const int nqueue, const int queueType) {
+Manager::Manager(const MPI::Intracomm& comm_world, const int manager_rank, const int worker_size, const bool componentDataAwareSchedule, const int nqueue, const bool canSteal, const int queueType) {
 	this->comm_world =comm_world;
 	this->manager_rank = manager_rank;
 	this->worker_size = worker_size;
@@ -29,7 +29,7 @@ Manager::Manager(const MPI::Intracomm& comm_world, const int manager_rank, const
         }
     }
     this->componentDependencies = new TrackDependencies();
-
+    taskSteal = canSteal;
 }
 
 Manager::~Manager() {
@@ -294,9 +294,11 @@ void Manager::manager_process()
 							}
 						}
 						// if data reuse is not enabled or did not find a component to reuse data, try to get any.
-						if(compToExecute == NULL){
+                        int queueSize = componentsToExecute[iq]->getSize();
+						if (compToExecute == NULL &&
+                            (queueSize > 0 || (queueSize <= 0 && taskSteal))) {
 							// select next component instantiation should be dispatched for execution
-                            iq = componentsToExecute[iq]->getSize() > 0 ? iq : getBiggerQueueId();
+                            iq = queueSize > 0 ? iq : getBiggerQueueId();
 							compToExecute = (PipelineComponentBase*)componentsToExecute[iq]->getTask();
 						}
 						// tell worker that manager is ready

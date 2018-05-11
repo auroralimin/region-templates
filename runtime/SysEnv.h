@@ -38,7 +38,7 @@ public:
 
 	void parseInputArguments(int argc, char**argv);
 
-	int startupSystem(int argc, char **argv, std::string componentsLibName, bool singleQueue = true);
+	int startupSystem(int argc, char **argv, std::string componentsLibName, bool singleQueue = true, bool canSteal = false);
 	int executeComponent(PipelineComponentBase *compInstance, int n = 0);
 
 	int startupExecution();

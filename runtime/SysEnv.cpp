@@ -57,7 +57,7 @@ void SysEnv::setManager(Manager *manager)
 }
 void SysEnv::parseInputArguments(int argc, char**argv){
 	// Init parameters to create Worker to default values
-	cpus = 0;
+	cpus = 1;
 	gpus = 0;
 	windowSize=-1;
 	// FCFS
@@ -131,7 +131,7 @@ void SysEnv::parseInputArguments(int argc, char**argv){
 	}
 
 }
-int SysEnv::startupSystem(int argc, char **argv, std::string componentsLibName, bool singleQueue){
+int SysEnv::startupSystem(int argc, char **argv, std::string componentsLibName, bool singleQueue, bool canSteal){
 	// set up mpi
 	int rank, size, worker_size, manager_rank;
 	std::string hostname;
@@ -173,7 +173,7 @@ int SysEnv::startupSystem(int argc, char **argv, std::string componentsLibName, 
 	// decide based on rank of worker which way to process
 	if (rank == manager_rank) {
 		// Create the manager process information
-		this->setManager(new Manager(comm_world, manager_rank, worker_size, componentDataAwareSchedule, nqueue));
+		this->setManager(new Manager(comm_world, manager_rank, worker_size, componentDataAwareSchedule, nqueue, canSteal));
 
 		// Check whether all Worker have successfully initialized their execution
 		this->getManager()->checkConfiguration();

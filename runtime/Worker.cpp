@@ -291,7 +291,6 @@ void Worker::workerProcess()
 
 				if(pc != NULL){
                     std::cout << "NAME! " << pc->getComponentName() << std::endl;
-                    tu.markTimeUS("c_init");
 					// One more component instance was received and is being dispatched for execution
 					this->incrementActiveComponentInstances();
 
@@ -330,10 +329,6 @@ void Worker::workerProcess()
 					this->getResourceManager()->insertTask(callBackTask);
 
 
-                    tu.markTimeUS("c_end");
-                    std::ostringstream ss1;
-                    ss1 << "\"" << pc->getSubname() << "_" << rank << "\"";
-                    tu.markDiffUS("c_init", "c_end", ss1.str());
 				}else{
 					std::cout << "Error: Failed to load PipelineComponent!"<<std::endl;
 				}

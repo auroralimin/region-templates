@@ -45,7 +45,6 @@ public:
 	bool doesIntersect(BoundingBox b);
 	BoundingBox intersection(BoundingBox b);
 
-
 	void print() const;
 	const Point& getLb() const;
 	const Point& getUb() const;
@@ -56,6 +55,11 @@ public:
 
 	void setLb(const Point& lb);
 	void setUb(const Point& ub);
+
+    friend std::ostream& operator<<(std::ostream& os, const BoundingBox& bb) {
+        os << "{{" << bb.getUb().getX() << ", " << bb.getUb().getY() << "}, {"
+           << bb.getLb().getX() << ", " << bb.getLb().getY() << "}}";
+    }
 };
 
 struct BBComparator{

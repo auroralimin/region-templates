@@ -238,6 +238,7 @@ cv::Mat DataRegionFactory::loadDefault(DenseDataRegion2D *dr2D, std::string path
 
 cv::Mat DataRegionFactory::loadSvs(DenseDataRegion2D *dr2D) {
     TimeUtils tu("svs1");
+    TimeUtils tu2("svs1");
     /* TODO: solve bug that changes dataRegion when trying to access isAppInput
        if(!dr2D->getIsAppInput()){
        std::cout << "Failed to read Data region. Svs images must be for input only." << std::endl;
@@ -275,9 +276,13 @@ cv::Mat DataRegionFactory::loadSvs(DenseDataRegion2D *dr2D) {
     openslide_close(osr);
 
     tu.markTimeUS("svs2");
+    tu2.markTimeUS("svs2");
     tu.markDiffUS("svs2", "svs1", "load"); 
+    tu2.markDiffUS("svs2", "svs1", dr2D->getId()); 
     tu.printDiffs();
+    tu2.printDiffs();
     tu.outCsv("profiling.csv");
+    tu2.outCsv("read_times.csv");
 
     return chunkData;
 }

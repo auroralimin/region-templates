@@ -71,6 +71,8 @@ private:
 	// MPI structure defining the communication group information
 	MPI::Intracomm comm_world;
 
+    bool taskSteal;
+
 	void sendComponentInfoToWorker(int worker_id, PipelineComponentBase *pc);
 
 	void sendDRInfoToWorkerForGlobalStorage(int worker_id, std::string rtName, std::string rtId, DataRegion *dr);
@@ -85,7 +87,7 @@ private:
 	friend class PipelineComponentBase;
 
 public:
-	Manager(const MPI::Intracomm& comm_world, const int manager_rank, const int worker_size, const bool componentDataAwareSchedule=false, const int nqueue = 1, const int queueType=ExecEngineConstants::FCFS_QUEUE);
+	Manager(const MPI::Intracomm& comm_world, const int manager_rank, const int worker_size, const bool componentDataAwareSchedule=false, const int nqueue = 1, const bool canSteal = false, const int queueType=ExecEngineConstants::FCFS_QUEUE);
 	virtual ~Manager();
 
 	void manager_process();

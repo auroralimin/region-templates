@@ -32,11 +32,11 @@
 
 namespace gth818n
 {
-  int getMagnification(openslide_t *osr);
+    int getMagnification(openslide_t *osr);
+    void getLargestLevelSize(openslide_t *osr, int32_t& levelOfLargestSize, int64_t& largestSizeW, int64_t& largestSizeH);
+    void getLevelSize(int level, openslide_t *osr, int64_t& SizeW, int64_t& SizeH);
 
-  void getLargestLevelSize(openslide_t *osr, int32_t& levelOfLargestSize, int64_t& largestSizeW, int64_t& largestSizeH);
-
-  void osrRegionToCVMat(const uint32_t* osrRegion, cv::Mat thisTile);
+    void osrRegionToCVMat(const uint32_t* osrRegion, cv::Mat thisTile);
 
 }// namepspace
 
