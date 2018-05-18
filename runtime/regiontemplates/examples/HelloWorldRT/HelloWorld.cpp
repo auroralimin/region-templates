@@ -186,11 +186,15 @@ int main (int argc, char **argv){
 
     // Tell the system which libraries should be used and if manager will
     // have a single queue or not
+    bool singleQueue = false;
     if (reduced)
-        sysEnv.startupSystem(argc, argv, "libcomponentsrt.so", false, true);
+        sysEnv.startupSystem(argc, argv, "libcomponentsrt.so", singleQueue, true);
     else
-        sysEnv.startupSystem(argc, argv, "libcomponentsrt.so", false, false);
+        sysEnv.startupSystem(argc, argv, "libcomponentsrt.so", singleQueue, false);
+
     int nqueue = sysEnv.getNqueue();
+    if (singleQueue) nqueue = 1;
+    std::cout << "Number of Queues = " << nqueue << std::endl;
 
     // Create region templates description without instantiating data
     RegionTemplateCollection *rtCollection;

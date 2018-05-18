@@ -101,39 +101,49 @@ void QuadTree::merge() {
     nodes = NULL;
 }
 
-void QuadTree::backgroundAwareMerge(int idealOg, float minSplit, float minRatio) {
+void QuadTree::backgroundAwareMerge(int idealOg, int minNodes, float minRatio) {
     if (og < idealOg && nodes) {
         // Se for menor que o og ideal, nao faz merge mas pede para os filhos fazerem
         for (int i = 0; i < 4; i++) {
             if (nodes[i]) {
-                nodes[i]->backgroundAwareMerge(idealOg, minSplit, minRatio);
+                nodes[i]->backgroundAwareMerge(idealOg, minNodes, minRatio);
             }
         }
         return;
     }
 
+    if (!nodes) return;
+
+    int nBackgrounds = 0;
+    float ratios[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    for (int i = 0; i < 4; i++) {
+        if (nodes[i]) {
+            ratios[i] = nodes[i]->getRatio();
+            if (ratios[i] <= minRatio) {
+                nBackgrounds++;
+            }
+        }
+    }
+
     // Se nao tem filhos o suficiente sendo background
-    if (ratio > minSplit) {
-        std::cout << bb << " (ratio = " << ratio << "): Merged!" << std::endl;
+    if (nBackgrounds < minNodes) {
+        std::cout << bb << " (nBackgrounds = " << nBackgrounds << "): Merged!" << std::endl;
         merge();
     // Se tem
     } else {
-        if (!nodes) {
-            return;
-        }
         for (int i = 0; i < 4; i++) {
             if (nodes[i]) {
-                if (nodes[i]->getRatio() <= minRatio) {
+                if (ratios[i] <= minRatio) {
                     std::ofstream out;
                     out.open("backgrounds.csv", std::ios_base::app);
                     out << "\"" << nodes[i]->getBb() << "\"" << std::endl;
                     out.close();
-                    std::cout << nodes[i]->getBb() << " (ratio = " << ratio << "): Background ignored!" << std::endl;
+                    std::cout << nodes[i]->getBb() << " (ratio = " << ratios[i] << "): Background ignored!" << std::endl;
                     //saveTiff(nodes[i]->getBb());
                     delete nodes[i];
                     nodes[i] = NULL;
                } else {
-                   nodes[i]->backgroundAwareMerge(idealOg, minSplit, minRatio);
+                   nodes[i]->backgroundAwareMerge(idealOg, minNodes, minRatio);
                }
             }
         }

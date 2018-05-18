@@ -15,7 +15,7 @@ class QuadTree {
         void calculateRatios();
         void merge();
         void backgroundAwareMerge(int idealOg,
-                                  float minSplit = 0.1,
+                                  int minNodes = 2,
                                   float minRatio = 0.01);
         void recalculateBbs(int32_t level = 0);
         std::vector<QuadTree> treeToVec();
