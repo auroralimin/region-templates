@@ -270,8 +270,8 @@ cv::Mat DataRegionFactory::loadSvs(DenseDataRegion2D *dr2D) {
     gth818n::osrRegionToCVMat(dest, chunkData);
 
     delete[] dest;
-    //std::string name =  "temp/" + dr2D->getId() + ".tiff";
-    //cv::imwrite(name.c_str(), chunkData);
+    std::string name =  "temp/" + dr2D->getId() + ".tiff";
+    cv::imwrite(name.c_str(), chunkData);
     dr2D->setData(chunkData);
     openslide_close(osr);
 

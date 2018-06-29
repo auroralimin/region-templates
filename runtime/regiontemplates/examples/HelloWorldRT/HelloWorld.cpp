@@ -21,6 +21,7 @@
 
 #include "SysEnv.h"
 #include "Segmentation.h"
+#include "FeatureExtraction.h"
 
 #define NUM_PIPELINE_INSTANCES	1
 
@@ -106,7 +107,7 @@ RegionTemplateCollection* RTFromFiles(std::string inputFolderPath, int ogIdeal, 
             ddr2d->setIsAppInput(true);
             ddr2d->setInputFileName(fileList[i]);
             ddr2d->setOutputExtension(DataRegion::SVS);
-            ddr2d->setRatio(1 - it->getRatio());
+            ddr2d->setRatio(it->getRatio());
 
             RegionTemplate *rt = new RegionTemplate();
             rt->setName("tile");
@@ -129,11 +130,18 @@ void unbalancedGraph(RegionTemplateCollection **rtCollection, SysEnv *sysEnv,
     for(int i = 0; i < nRT; i++){
         DataRegion *dr = (*rtCollection)->getRT(i)->getDataRegion(0);
         float ratio = dr->getRatio();
+
         Segmentation *seg = new Segmentation();
         seg->addRegionTemplateInstance((*rtCollection)->getRT(i),
                 (*rtCollection)->getRT(i)->getName());
+        
+        FeatureExtraction *fe =  new FeatureExtraction();
+        fe->addRegionTemplateInstance((*rtCollection)->getRT(i),
+                (*rtCollection)->getRT(i)->getName());
+
         sysEnv->executeComponent(seg, (i*nqueue)/nRT);
-        rsum[i%nqueue] += 1 - ratio;
+        sysEnv->executeComponent(fe, (i*nqueue)/nRT);
+        rsum[i%nqueue] += ratio;
     }
 
     for (int i = 0; i < nqueue; i++)
@@ -143,30 +151,45 @@ void unbalancedGraph(RegionTemplateCollection **rtCollection, SysEnv *sysEnv,
 void balancedGraph(RegionTemplateCollection **rtCollection, SysEnv *sysEnv,
         int nqueue) {
     std::vector<float> rsum(nqueue, 0);
-    /*
     int index = 0;
     for(int i = 0; i < (*rtCollection)->getNumRTs(); i++){
         DataRegion *dr = (*rtCollection)->getRT(i)->getDataRegion(0);
         float ratio = dr->getRatio();
+
         Segmentation *seg = new Segmentation();
         seg->addRegionTemplateInstance((*rtCollection)->getRT(i),
                 (*rtCollection)->getRT(i)->getName());
+
+        FeatureExtraction *fe =  new FeatureExtraction();
+        fe->addRegionTemplateInstance((*rtCollection)->getRT(i),
+                (*rtCollection)->getRT(i)->getName());
+
         sysEnv->executeComponent(seg, index);
-        rsum[index] += 1 - ratio;
+        sysEnv->executeComponent(fe, index);
+
+        rsum[index] += ratio;
         index = std::distance(rsum.begin(),
                 std::min_element(rsum.begin(), rsum.end()));
-    } */
+    }
+    /*
     int nRT = (*rtCollection)->getNumRTs();
     for(int i = 0; i < nRT; i++){
         DataRegion *dr = (*rtCollection)->getRT(i)->getDataRegion(0);
         float ratio = dr->getRatio();
+        
         Segmentation *seg = new Segmentation();
         seg->addRegionTemplateInstance((*rtCollection)->getRT(i),
                 (*rtCollection)->getRT(i)->getName());
+        
+        FeatureExtraction *fe =  new FeatureExtraction();
+        fe->addRegionTemplateInstance((*rtCollection)->getRT(i),
+                (*rtCollection)->getRT(i)->getName());
+
         sysEnv->executeComponent(seg, i%nqueue);
+        sysEnv->executeComponent(fe, i%nqueue);
         rsum[i%nqueue] += 1 - ratio;
     }
-
+    */
     for (int i = 0; i < nqueue; i++)
         std::cout << "RSUM[" << i << "] = " << rsum[i] << std::endl;
 }

@@ -11,6 +11,7 @@ TaskFeatures::~TaskFeatures() {
 
 bool TaskFeatures::run(int procType, int tid) {
     TimeUtils tu("tfeat1");
+    TimeUtils tu2("f_init");
 	int *bbox = NULL;
 	int compcount;
 	uint64_t t1 = Util::ClockGetTimeProfile();
@@ -30,4 +31,9 @@ bool TaskFeatures::run(int procType, int tid) {
     tu.markDiffUS("tfeat2", "tfeat1", "tfeat"); 
     tu.printDiff("tfeat");
     tu.outCsv("profiling.csv");
+    tu2.markTimeUS("f_end");
+    std::ostringstream ss1;
+    ss1 << "" << bgr->getId();
+    tu2.markDiffUS("f_init", "f_end", ss1.str());
+    tu2.outCsv("fe_time.csv");
 }
